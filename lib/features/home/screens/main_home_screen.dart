@@ -80,6 +80,8 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
   Widget build(BuildContext context) {
     return BlocConsumer<AuthBloc, AuthState>(
       listener: (context, state) {
+        if (!mounted) return;
+
         if (state is LogoutSuccess) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -115,7 +117,7 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
 
               // Custom Drawer
               drawer: BlocBuilder<ProfileBloc, ProfileState>(
-                builder: (context, profileState) {
+                builder: (drawerContext, profileState) {
                   String userName = 'MedTech User';
                   String profileImageUrl = '';
 
@@ -141,7 +143,7 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
                     },
 
                     onSettingsTap: () {
-                      Navigator.pop(context);
+                      Navigator.pop(drawerContext);
 
                       Navigator.push(
                         context,
@@ -152,7 +154,7 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
                     },
 
                     onInterestedTap: () {
-                      Navigator.pop(context);
+                      Navigator.pop(drawerContext);
 
                       Navigator.push(
                         context,
@@ -163,7 +165,7 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
                     },
 
                     onWalletTap: () {
-                      Navigator.pop(context);
+                      Navigator.pop(drawerContext);
 
                       Navigator.push(
                         context,
@@ -172,7 +174,9 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
                     },
 
                     onLogoutTap: () {
-                      Navigator.pop(context);
+                      final authBloc = drawerContext.read<AuthBloc>();
+
+                      Navigator.pop(drawerContext);
 
                       showDialog(
                         context: context,
@@ -184,10 +188,7 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
                             confirmText: 'Logout',
                             onConfirm: () {
                               Navigator.pop(dialogContext);
-
-                              context.read<AuthBloc>().add(
-                                const LogoutRequested(),
-                              );
+                              authBloc.add(const LogoutRequested());
                             },
                           );
                         },

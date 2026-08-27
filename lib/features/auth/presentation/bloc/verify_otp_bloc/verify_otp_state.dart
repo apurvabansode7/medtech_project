@@ -10,11 +10,20 @@ class VerifyOtpLoading extends VerifyOtpState {
   const VerifyOtpLoading();
 }
 
+// class VerifyOtpSuccess extends VerifyOtpState {
+//   final String otpId;
+
+//   const VerifyOtpSuccess({
+//     required this.otpId,
+//   });
+// }
 class VerifyOtpSuccess extends VerifyOtpState {
-  final String otpId;
+  final String accessToken;
+  final String refreshToken;
 
   const VerifyOtpSuccess({
-    required this.otpId,
+    required this.accessToken,
+    required this.refreshToken,
   });
 }
 

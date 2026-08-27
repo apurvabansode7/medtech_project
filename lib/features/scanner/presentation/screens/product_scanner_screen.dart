@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:medtech_project/constant/app_colors.dart';
 import 'package:medtech_project/features/scanner/presentation/bloc/product_scan_bloc.dart';
 import 'package:medtech_project/features/scanner/presentation/bloc/product_scan_event.dart';
@@ -135,6 +136,16 @@ class _ProductScannerScreenState extends State<ProductScannerScreen>
         break;
       }
     }
+  }
+
+  Future<void> _closeScannerScreen() async {
+    if (!mounted) return;
+
+    await _scannerController.stop();
+
+    if (!mounted) return;
+
+    Navigator.of(context).pop();
   }
 
   Future<void> _handleScannedCode(String value) async {
@@ -279,64 +290,193 @@ class _ProductScannerScreenState extends State<ProductScannerScreen>
     await _scannerController.toggleTorch();
   }
 
-  void _useScannedCode() {
-    if (_scannedCode == null || _scannedCode!.isEmpty) {
+  // void _useScannedCode() {
+  //   if (_scannedCode == null || _scannedCode!.isEmpty) {
+  //     return;
+  //   }
+
+  //   context.read<ProductScanBloc>().add(
+  //     ProductScanSubmitted(
+  //       code: _scannedCode!,
+  //       latitude: 19.214294,
+  //       longitude: 73.2053,
+  //       deviceUuid: '3f2504e0-4f89-11d3-9a0c-0305e82c3301',
+  //       deviceInfo: 'iOS 18 / Safari 18',
+  //       appVersion: '4.2.1',
+  //     ),
+  //   );
+  // }
+
+  Future<void> _useScannedCode() async {
+  if (_scannedCode == null || _scannedCode!.isEmpty) {
+    return;
+  }
+
+  try {
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+
+    if (!serviceEnabled) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please turn on location services.'),
+        ),
+      );
+
       return;
     }
+
+    LocationPermission permission = await Geolocator.checkPermission();
+
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+    }
+
+    if (permission == LocationPermission.denied) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Location permission is required.'),
+        ),
+      );
+
+      return;
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Location permission is permanently denied. Please enable it from settings.',
+          ),
+        ),
+      );
+
+      return;
+    }
+
+    // Get current live location
+    final Position position = await Geolocator.getCurrentPosition(
+      locationSettings: const LocationSettings(
+        accuracy: LocationAccuracy.high,
+      ),
+    );
+
+    if (!mounted) return;
 
     context.read<ProductScanBloc>().add(
       ProductScanSubmitted(
         code: _scannedCode!,
-        latitude: 19.214294,
-        longitude: 73.2053,
+        latitude: position.latitude,
+        longitude: position.longitude,
         deviceUuid: '3f2504e0-4f89-11d3-9a0c-0305e82c3301',
         deviceInfo: 'iOS 18 / Safari 18',
         appVersion: '4.2.1',
       ),
     );
+  } catch (e) {
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Unable to get current location: $e'),
+      ),
+    );
   }
+}
 
   void _showRewardDialog(ProductScanSuccess state) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogContext) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20.r),
-          ),
-          title: Column(
-            children: [
-              Icon(Icons.check_circle, color: AppColors.success, size: 60.sp),
-              SizedBox(height: 10.h),
-              Text(
-                'Product Scanned!',
-                style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold),
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (dialogContext) {
+      return Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: EdgeInsets.symmetric(horizontal: 20.w),
+        child: Container(
+          width: double.infinity,
+          padding: EdgeInsets.all(20.w),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(22.r),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.3),
+                blurRadius: 20.r,
+                offset: Offset(0, 8.h),
               ),
             ],
           ),
-          content: Column(
+          child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(state.message, textAlign: TextAlign.center),
+              // Success Icon
+              Container(
+                width: 65.w,
+                height: 65.w,
+                decoration: BoxDecoration(
+                  color: AppColors.success.withValues(alpha: 0.12),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.check_circle,
+                  color: AppColors.success,
+                  size: 45.sp,
+                ),
+              ),
 
-              SizedBox(height: 20.h),
+              SizedBox(height: 14.h),
 
+              // Title
+              Text(
+                'Product Scanned!',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 20.sp,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+
+              SizedBox(height: 8.h),
+
+              // Message
+              Text(
+                state.message,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+
+              SizedBox(height: 16.h),
+
+              // Reward Points
               if (state.isAwarded && state.rewardPoints != null)
                 Container(
                   width: double.infinity,
-                  padding: EdgeInsets.all(16.w),
+                  padding: EdgeInsets.all(14.w),
                   decoration: BoxDecoration(
-                    color: Colors.green.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(15.r),
+                    color: AppColors.success.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: Column(
                     children: [
                       Text(
                         'Reward Points',
-                        style: TextStyle(fontSize: 14.sp, color: Colors.grey),
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          color: Colors.grey.shade600,
+                        ),
                       ),
+
                       SizedBox(height: 5.h),
+
                       Text(
                         '+${state.rewardPoints}',
                         style: TextStyle(
@@ -349,44 +489,73 @@ class _ProductScannerScreenState extends State<ProductScannerScreen>
                   ),
                 ),
 
+              // No Reward
               if (!state.isAwarded)
-                Text(
-                  'No reward points awarded.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: AppColors.grey, fontSize: 14.sp),
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(14.w),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  child: Text(
+                    'No reward points awarded.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: AppColors.grey,
+                      fontSize: 14.sp,
+                    ),
+                  ),
                 ),
+
+              SizedBox(height: 20.h),
+
+              // Buttons
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () {
+                        Navigator.pop(dialogContext);
+                        _startAnotherScan();
+                      },
+                      child: Text(
+                        'Scan Another',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 13.sp,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  SizedBox(width: 12.w),
+
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        Navigator.of(dialogContext).pop();
+
+                        await _closeScannerScreen();
+                      },
+                      child: Text(
+                        'Close',
+                        style: TextStyle(
+                          fontSize: 13.sp,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
-
-          actions: [
-            Row(
-              children: [
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(dialogContext);
-
-                    _startAnotherScan();
-                  },
-                  child: const Text('Scan Another Product'),
-                ),
-
-                SizedBox(height: 8.h),
-
-                OutlinedButton(
-                  onPressed: () {
-                    Navigator.pop(dialogContext);
-
-                    Navigator.pop(context, true);
-                  },
-                  child: const Text('Close'),
-                ),
-              ],
-            ),
-          ],
-        );
-      },
-    );
-  }
+        ),
+      );
+    },
+  );
+}
 
   void _showFailureDialog(ProductScanFailure state) {
     showDialog(
@@ -432,7 +601,7 @@ class _ProductScannerScreenState extends State<ProductScannerScreen>
 
                 // Title
                 Text(
-                  'Verification Failed',
+                  'Product Verification Failed',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 20.sp,

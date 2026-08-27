@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-
 import 'package:medtech_project/components/app_buttons.dart';
 import 'package:medtech_project/components/apptextfield.dart';
 import 'package:medtech_project/constant/app_colors.dart';
@@ -19,6 +18,7 @@ class ForgotPasswordScreen extends StatefulWidget {
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final TextEditingController emailController = TextEditingController();
+  bool _isSubmitting = false;
 
   @override
   void dispose() {
@@ -38,7 +38,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             ),
           );
 
-          Navigator.push(
+          Navigator.pushReplacement(
             context,
             MaterialPageRoute(
               builder:
@@ -56,6 +56,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
       builder: (context, state) {
         final isLoading = state is ForgotPasswordLoading;
+        final email = emailController.text.trim();
+        final canSubmit = email.isNotEmpty && !isLoading && !_isSubmitting;
 
         return Scaffold(
           backgroundColor: AppColors.background,
@@ -64,19 +66,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             backgroundColor: AppColors.background,
             surfaceTintColor: AppColors.transparent,
             elevation: 0,
-            leading: IconButton(
-              onPressed:
-                  isLoading
-                      ? null
-                      : () {
-                        Navigator.pop(context);
-                      },
-              icon: Icon(
-                Icons.arrow_back,
-                size: 24.sp,
-                color: AppColors.textPrimary,
-              ),
-            ),
           ),
 
           body: SafeArea(
@@ -139,55 +128,52 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         label: 'Email',
                         hint: 'Enter your email',
                         keyboardType: TextInputType.emailAddress,
+                        onChanged: (_) {
+                          setState(() {});
+                        },
                       ),
 
-                      SizedBox(height: 24.h),
+                      SizedBox(height: 30.h),
 
                       AppButton(
                         title: 'Send OTP',
                         isLoading: isLoading,
-                        onPressed:
-                            isLoading
-                                ? null
-                                : () {
-                                  final email = emailController.text.trim();
+                        // onPressed:
+                        //     isLoading
+                        //         ? null
+                        //         : () {
+                        //           final email = emailController.text.trim();
 
-                                  if (email.isEmpty) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                          'Please enter your email address',
-                                        ),
-                                      ),
-                                    );
-                                    return;
-                                  }
+                        //           if (email.isEmpty) {
+                        //             ScaffoldMessenger.of(context).showSnackBar(
+                        //               const SnackBar(
+                        //                 content: Text(
+                        //                   'Please enter your email address',
+                        //                 ),
+                        //               ),
+                        //             );
+                        //             return;
+                        //           }
+
+                        //           context.read<ForgotPasswordBloc>().add(
+                        //             ForgotPasswordSubmitted(email: email),
+                        //           );
+                        //         },
+                        onPressed:
+                            canSubmit
+                                ? () {
+                                  // Immediately block another tap.
+                                  setState(() {
+                                    _isSubmitting = true;
+                                  });
+
+                                  final email = emailController.text.trim();
 
                                   context.read<ForgotPasswordBloc>().add(
                                     ForgotPasswordSubmitted(email: email),
                                   );
-                                },
-                      ),
-
-                      SizedBox(height: 20.h),
-
-                      Center(
-                        child: TextButton(
-                          onPressed:
-                              isLoading
-                                  ? null
-                                  : () {
-                                    Navigator.pop(context);
-                                  },
-                          child: Text(
-                            'Back to Login',
-                            style: TextStyle(
-                              fontSize: 14.sp,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.primary,
-                            ),
-                          ),
-                        ),
+                                }
+                                : null,
                       ),
                     ],
                   ),

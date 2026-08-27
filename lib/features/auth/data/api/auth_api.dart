@@ -16,6 +16,18 @@ class AuthApi {
     );
   }
 
+  // NEW: Login with OTP - only email required
+  Future<Response> loginWithOtp({
+    required String email,
+  }) async {
+    return await apiService.post(
+      '/api/v1/partners-auth/login-otp',
+      data: {
+        'email': email,
+      },
+    );
+  }
+
   Future<Response> forgotPassword({required String email}) async {
     return await apiService.post(
       '/api/v1/otp/forgot-password',
@@ -26,13 +38,15 @@ class AuthApi {
   Future<Response> verifyOtp({
     required String email,
     required String otp,
+     // required String accessToken,
+
   }) async {
     return await apiService.post(
       '/api/v1/otp/verify',
       data: {
         'userType': 'CHEMIST',
         'email': email,
-        'purpose': 'FORGOT_PASSWORD',
+        'purpose': 'LOGIN',
         'otp': otp,
       },
     );
@@ -44,7 +58,7 @@ class AuthApi {
       data: {
         'userType': 'CHEMIST',
         'email': email,
-        'purpose': 'FORGOT_PASSWORD',
+        'purpose': 'LOGIN',
       },
     );
   }
@@ -68,17 +82,16 @@ class AuthApi {
   }
 
   Future<Response> setPassword({
-    required String otpId,
     required String password,
     required String confirmPassword,
+    required String passwordSetupToken,
   }) async {
     return await apiService.post(
-      '/api/v1/otp/set-password',
-      data: {
-        'otpId': otpId,
-        'password': password,
-        'confirmPassword': confirmPassword,
-      },
+      '/api/v1/partners-auth/set-password',
+      data: {'password': password, 'confirmPassword': confirmPassword},
+      options: Options(
+        headers: {'Authorization': 'Bearer $passwordSetupToken'},
+      ),
     );
   }
 

@@ -105,9 +105,18 @@ class ApiService {
     return await dio.get(endpoint, queryParameters: queryParameters);
   }
 
-  Future<Response> post(String endpoint, {Map<String, dynamic>? data}) async {
+  // Future<Response> post(String endpoint, {Map<String, dynamic>? data}) async {
+  //   await _checkInternet();
+  //   return await dio.post(endpoint, data: data);
+  // }
+  Future<Response> post(
+    String endpoint, {
+    Map<String, dynamic>? data,
+    Options? options,
+  }) async {
     await _checkInternet();
-    return await dio.post(endpoint, data: data);
+
+    return await dio.post(endpoint, data: data, options: options);
   }
 
   Future<Response> put(String endpoint, {Map<String, dynamic>? data}) async {

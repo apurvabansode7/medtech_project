@@ -5,10 +5,13 @@ abstract class VerifyOtpEvent {
 class VerifyOtpSubmitted extends VerifyOtpEvent {
   final String email;
   final String otp;
+    //final String accessToken;
 
   const VerifyOtpSubmitted({
     required this.email,
     required this.otp,
+     //   required this.accessToken,
+
   });
 }
 

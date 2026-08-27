@@ -8,6 +8,7 @@ import 'package:medtech_project/constant/app_colors.dart';
 import 'package:medtech_project/features/profile/presentation/bloc/profile.bloc.dart';
 import 'package:medtech_project/features/profile/presentation/bloc/profile_event.dart';
 import 'package:medtech_project/features/profile/presentation/bloc/profile_state.dart';
+import 'package:medtech_project/features/profile/presentation/screens/edit_profile_screen.dart';
 import 'package:medtech_project/features/profile/presentation/widgets/profile_shimmer.dart';
 
 @RoutePage()
@@ -81,7 +82,7 @@ class ProfileScreen extends StatelessWidget {
                       // Profile header
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 16.w),
-                        child: _buildProfileHeader(profile),
+                        child: _buildProfileHeader(profile, context),
                       ),
 
                       SizedBox(height: 22.h),
@@ -231,58 +232,111 @@ class ProfileScreen extends StatelessWidget {
                         ),
                       ],
 
+                      // if (profile.business.isNotEmpty) ...[
+                      //   SizedBox(height: 22.h),
+
+                      //   _buildSectionTitle('Business Details'),
+
+                      //   SizedBox(height: 10.h),
+
+                      //   _buildInfoCard(
+                      //     children: [
+                      //       _buildInfoRow(
+                      //         icon: Icons.store_outlined,
+                      //         title: 'Outlet',
+                      //         value: profile.business.first.outletName,
+                      //       ),
+                      //       _buildInfoRow(
+                      //         icon: Icons.person_outline,
+                      //         title: 'Username',
+                      //         value: profile.business.first.userName,
+                      //       ),
+                      //       _buildInfoRow(
+                      //         icon: Icons.badge_outlined,
+                      //         title: 'PAN Number',
+                      //         value: profile.business.first.panNumber,
+                      //       ),
+                      //       _buildInfoRow(
+                      //         icon: Icons.medical_information_outlined,
+                      //         title: 'Drug License',
+                      //         value: profile.business.first.drugLicenseNumber,
+                      //       ),
+                      //       _buildInfoRow(
+                      //         icon: Icons.location_on_outlined,
+                      //         title: 'Address',
+                      //         value:
+                      //             '${profile.business.first.addressLine1}, '
+                      //             '${profile.business.first.city}, '
+                      //             '${profile.business.first.state} - '
+                      //             '${profile.business.first.pincode}',
+                      //       ),
+                      //       _buildInfoRow(
+                      //         icon: Icons.verified_outlined,
+                      //         title: 'Approval',
+                      //         value: profile.business.first.approvalStatus,
+                      //       ),
+                      //     ],
+                      //   ),
+                      // ],
+                      // for the testing only 
                       if (profile.business.isNotEmpty) ...[
-                        SizedBox(height: 22.h),
+  SizedBox(height: 22.h),
 
-                        _buildSectionTitle('Business Details'),
+  _buildSectionTitle('Business Details'),
 
-                        SizedBox(height: 10.h),
+  SizedBox(height: 10.h),
 
-                        ...profile.business.map(
-                          (business) => Padding(
-                            padding: EdgeInsets.only(bottom: 12.h),
-                            child: _buildInfoCard(
-                              children: [
-                                _buildInfoRow(
-                                  icon: Icons.store_outlined,
-                                  title: 'Outlet',
-                                  value: business.outletName,
-                                ),
-                                _buildInfoRow(
-                                  icon: Icons.person_outline,
-                                  title: 'Username',
-                                  value: business.userName,
-                                ),
-                                _buildInfoRow(
-                                  icon: Icons.badge_outlined,
-                                  title: 'PAN Number',
-                                  value: business.panNumber,
-                                ),
-                                _buildInfoRow(
-                                  icon: Icons.medical_information_outlined,
-                                  title: 'Drug License',
-                                  value: business.drugLicenseNumber,
-                                ),
-                                _buildInfoRow(
-                                  icon: Icons.location_on_outlined,
-                                  title: 'Address',
-                                  value:
-                                      '${business.addressLine1}, '
-                                      '${business.city}, '
-                                      '${business.state} - '
-                                      '${business.pincode}',
-                                ),
-                                _buildInfoRow(
-                                  icon: Icons.verified_outlined,
-                                  title: 'Approval',
-                                  value: business.approvalStatus,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
+  Column(
+    children: profile.business.map((business) {
+      return Padding(
+        padding: EdgeInsets.only(bottom: 16.h),
+        child: _buildInfoCard(
+          children: [
+            _buildInfoRow(
+              icon: Icons.store_outlined,
+              title: 'Outlet',
+              value: business.outletName,
+            ),
 
+            _buildInfoRow(
+              icon: Icons.person_outline,
+              title: 'Username',
+              value: business.userName,
+            ),
+
+            _buildInfoRow(
+              icon: Icons.badge_outlined,
+              title: 'PAN Number',
+              value: business.panNumber,
+            ),
+
+            _buildInfoRow(
+              icon: Icons.medical_information_outlined,
+              title: 'Drug License',
+              value: business.drugLicenseNumber,
+            ),
+
+            _buildInfoRow(
+              icon: Icons.location_on_outlined,
+              title: 'Address',
+              value:
+                  '${business.addressLine1}, '
+                  '${business.city}, '
+                  '${business.state} - '
+                  '${business.pincode}',
+            ),
+
+            _buildInfoRow(
+              icon: Icons.verified_outlined,
+              title: 'Approval',
+              value: business.approvalStatus,
+            ),
+          ],
+        ),
+      );
+    }).toList(),
+  ),
+],
                       SizedBox(height: 30.h),
                     ],
                   ),
@@ -296,138 +350,153 @@ class ProfileScreen extends StatelessWidget {
       ),
     );
   }
-Widget _buildProfileHeader(profile) {
-  final String ownerName = profile.ownerName.trim();
 
-  // Change profile.profileImage to your actual model field name
-  final String imageUrl = profile.profileImage ?? '';
+  Widget _buildProfileHeader(profile, BuildContext context) {
+    final String ownerName = profile.ownerName.trim();
 
-  return Container(
-    width: double.infinity,
-    padding: EdgeInsets.all(16.w),
-    decoration: BoxDecoration(
-      color: AppColors.primary,
-      borderRadius: BorderRadius.circular(12.r),
-    ),
-    child: Row(
-      children: [
-        // =====================================================
-        // PROFILE IMAGE / INITIAL
-        // =====================================================
+    // Change profile.profileImage to your actual model field name
+    final String imageUrl = profile.profileImage ?? '';
 
-        Container(
-          width: 58.w,
-          height: 58.w,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: Colors.white,
-              width: 2,
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: AppColors.primary,
+        borderRadius: BorderRadius.circular(12.r),
+      ),
+      child: Row(
+        children: [
+          // =====================================================
+          // PROFILE IMAGE / INITIAL
+          // =====================================================
+
+          Container(
+            width: 58.w,
+            height: 58.w,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 2),
             ),
-          ),
-          child: ClipOval(
-            child: CachedImage(
-              imageUrl: imageUrl,
-              width: 58.w,
-              height: 58.w,
-              fit: BoxFit.cover,
-              backgroundColor: Colors.white.withValues(
-                alpha: 0.15,
-              ),
-              initial: ownerName,
-              placeholder: Container(
-                color: Colors.white.withValues(alpha: 0.15),
-                alignment: Alignment.center,
-                child: Text(
-                  _getInitial(ownerName),
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 24.sp,
-                    fontWeight: FontWeight.bold,
+            child: ClipOval(
+              child: CachedImage(
+                imageUrl: imageUrl,
+                width: 58.w,
+                height: 58.w,
+                fit: BoxFit.cover,
+                backgroundColor: Colors.white.withValues(alpha: 0.15),
+                initial: ownerName,
+                placeholder: Container(
+                  color: Colors.white.withValues(alpha: 0.15),
+                  alignment: Alignment.center,
+                  child: Text(
+                    _getInitial(ownerName),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24.sp,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
-              ),
-              errorWidget: Container(
-                color: Colors.white.withValues(alpha: 0.15),
-                alignment: Alignment.center,
-                child: Text(
-                  _getInitial(ownerName),
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 24.sp,
-                    fontWeight: FontWeight.bold,
+                errorWidget: Container(
+                  color: Colors.white.withValues(alpha: 0.15),
+                  alignment: Alignment.center,
+                  child: Text(
+                    _getInitial(ownerName),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24.sp,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
             ),
           ),
-        ),
 
-        SizedBox(width: 14.w),
+          SizedBox(width: 14.w),
 
-        // =====================================================
-        // PROFILE DETAILS
-        // =====================================================
-
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                ownerName.isEmpty ? 'MedTech User' : ownerName,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 17.sp,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-
-              SizedBox(height: 4.h),
-
-              Text(
-                profile.businessName,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: Colors.white.withValues(
-                    alpha: 0.75,
+          // =====================================================
+          // PROFILE DETAILS
+          // =====================================================
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  ownerName.isEmpty ? 'MedTech User' : ownerName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 17.sp,
+                    fontWeight: FontWeight.w700,
                   ),
-                  fontSize: 12.sp,
                 ),
-              ),
 
-              SizedBox(height: 4.h),
+                SizedBox(height: 4.h),
 
-              Text(
-                profile.referenceId,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: Colors.white.withValues(
-                    alpha: 0.65,
+                Text(
+                  profile.businessName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.75),
+                    fontSize: 12.sp,
                   ),
-                  fontSize: 11.sp,
                 ),
-              ),
-            ],
+
+                SizedBox(height: 4.h),
+
+                Text(
+                  profile.referenceId,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.65),
+                    fontSize: 11.sp,
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
-    ),
-  );
-}
+          const SizedBox(width: 8),
 
-String _getInitial(String name) {
-  final trimmedName = name.trim();
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+            ),
+            child: IconButton(
+              onPressed: () async {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => EditProfileScreen(profile: profile),
+                  ),
+                );
 
-  if (trimmedName.isEmpty) {
-    return '?';
+                if (result == true && context.mounted) {
+                  context.read<ProfileBloc>().add(const LoadProfile());
+                }
+              },
+              icon: Icon(Icons.edit_outlined, color: Colors.white, size: 20.sp),
+              tooltip: 'Edit Profile',
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
-  return trimmedName.substring(0, 1).toUpperCase();
-}
+  String _getInitial(String name) {
+    final trimmedName = name.trim();
+
+    if (trimmedName.isEmpty) {
+      return '?';
+    }
+
+    return trimmedName.substring(0, 1).toUpperCase();
+  }
 
   Widget _buildSectionTitle(String title) {
     return Padding(

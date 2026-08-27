@@ -9,11 +9,13 @@ class AppTextField extends StatelessWidget {
   final String label;
   final String hint;
   final bool obscureText;
+  final bool readOnly;
   final TextInputType? keyboardType;
   final Widget? suffixIcon;
   final String? Function(String?)? validator;
   final ValueChanged<String>? onChanged;
-
+  final int? maxLength;
+  final TextCapitalization textCapitalization;
   final bool isPhone;
   final String countryCode;
   final ValueChanged<String>? onCountryChanged;
@@ -24,11 +26,15 @@ class AppTextField extends StatelessWidget {
     required this.label,
     required this.hint,
     this.obscureText = false,
+    this.readOnly = false, // ADD THIS
+
     this.keyboardType,
     this.suffixIcon,
     this.validator,
     this.onChanged,
     this.isPhone = false,
+    this.maxLength,
+    this.textCapitalization = TextCapitalization.none,
     this.countryCode = '+91',
     this.onCountryChanged,
   });
@@ -40,10 +46,7 @@ class AppTextField extends StatelessWidget {
       children: [
         Text(
           label,
-          style: TextStyle(
-            fontSize: 14.sp,
-            fontWeight: FontWeight.w600,
-          ),
+          style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
         ),
 
         SizedBox(height: 8.h),
@@ -52,21 +55,19 @@ class AppTextField extends StatelessWidget {
           controller: controller,
           obscureText: obscureText,
           validator: validator,
+           readOnly: readOnly,
           keyboardType: keyboardType,
           onChanged: onChanged,
-          style: TextStyle(
-            fontSize: 15.sp,
-          ),
+          maxLength: maxLength,
+          textCapitalization: textCapitalization,
+          style: TextStyle(fontSize: 15.sp),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: TextStyle(
-              fontSize: 14.sp,
-            ),
+            hintStyle: TextStyle(fontSize: 14.sp),
             suffixIcon: suffixIcon,
+            
 
-         prefixIcon: isPhone
-    ? const CustomCountryPhoneCodeField()
-    : null,
+            prefixIcon: isPhone ? const CustomCountryPhoneCodeField() : null,
 
             contentPadding: EdgeInsets.symmetric(
               horizontal: 16.w,
@@ -75,16 +76,12 @@ class AppTextField extends StatelessWidget {
 
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
-              borderSide: const BorderSide(
-                color: AppColors.border,
-              ),
+              borderSide: const BorderSide(color: AppColors.border),
             ),
 
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
-              borderSide: const BorderSide(
-                color: AppColors.border,
-              ),
+              borderSide: const BorderSide(color: AppColors.border),
             ),
 
             focusedBorder: OutlineInputBorder(

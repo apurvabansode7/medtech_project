@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -6,7 +7,7 @@ import 'package:medtech_project/constant/app_colors.dart';
 import 'package:medtech_project/features/auth/presentation/bloc/verify_otp_bloc/verify_bloc.dart';
 import 'package:medtech_project/features/auth/presentation/bloc/verify_otp_bloc/verify_otp_event.dart';
 import 'package:medtech_project/features/auth/presentation/bloc/verify_otp_bloc/verify_otp_state.dart';
-import 'package:medtech_project/features/auth/presentation/screens/reset_password_screen.dart';
+import 'package:medtech_project/features/home/screens/main_home_screen.dart';
 import 'package:pinput/pinput.dart';
 
 class VerifyOtpScreen extends StatefulWidget {
@@ -21,8 +22,52 @@ class VerifyOtpScreen extends StatefulWidget {
 class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
   final TextEditingController otpController = TextEditingController();
 
+  Timer? _otpTimer;
+  int _remainingSeconds = 600;
+
+  @override
+  void initState() {
+    super.initState();
+    _startOtpTimer();
+  }
+
+  void _startOtpTimer() {
+    _otpTimer?.cancel();
+
+    setState(() {
+      _remainingSeconds = 600;
+    });
+
+    _otpTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_remainingSeconds <= 1) {
+        timer.cancel();
+
+        if (mounted) {
+          setState(() {
+            _remainingSeconds = 0;
+          });
+        }
+      } else {
+        if (mounted) {
+          setState(() {
+            _remainingSeconds--;
+          });
+        }
+      }
+    });
+  }
+
+  String _formatTime() {
+    final minutes = _remainingSeconds ~/ 60;
+    final seconds = _remainingSeconds % 60;
+
+    return '${minutes.toString().padLeft(2, '0')}:'
+        '${seconds.toString().padLeft(2, '0')}';
+  }
+
   @override
   void dispose() {
+    _otpTimer?.cancel();
     otpController.dispose();
     super.dispose();
   }
@@ -31,27 +76,40 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
   Widget build(BuildContext context) {
     return BlocConsumer<VerifyOtpBloc, VerifyOtpState>(
       listener: (context, state) {
+        // if (state is VerifyOtpSuccess) {
+        //   ScaffoldMessenger.of(context).showSnackBar(
+        //     const SnackBar(
+        //       content: Text('OTP verified successfully'),
+        //       backgroundColor: Colors.green,
+        //     ),
+        //   );
+
+        //   // Pass email + otpId to reset password screen
+        //   Navigator.pushReplacement(
+        //     context,
+        //     MaterialPageRoute(
+        //       builder:
+        //           (_) => ResetPasswordScreen(
+        //             email: widget.email,
+        //             otpId: state.otpId,
+        //           ),
+        //     ),
+        //   );
+        // }
         if (state is VerifyOtpSuccess) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('OTP verified successfully'),
+              content: Text('Login successful'),
               backgroundColor: Colors.green,
             ),
           );
 
-          // Pass email + otpId to reset password screen
-          Navigator.push(
+          Navigator.pushAndRemoveUntil(
             context,
-            MaterialPageRoute(
-              builder:
-                  (_) => ResetPasswordScreen(
-                    email: widget.email,
-                    otpId: state.otpId,
-                  ),
-            ),
+            MaterialPageRoute(builder: (_) => MainHomeScreen()),
+            (route) => false,
           );
         }
-
         if (state is VerifyOtpFailure) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(state.message), backgroundColor: Colors.red),
@@ -61,6 +119,7 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
         // RESEND SUCCESS
         if (state is ResendOtpSuccess) {
           otpController.clear();
+          _startOtpTimer();
 
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -81,6 +140,13 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
       builder: (context, state) {
         final isLoading = state is VerifyOtpLoading;
         final isResendLoading = state is ResendOtpLoading;
+        final isOtpComplete = otpController.text.trim().length == 6;
+
+        final canVerifyOtp =
+            isOtpComplete &&
+            _remainingSeconds > 0 &&
+            !isLoading &&
+            !isResendLoading;
 
         return Scaffold(
           backgroundColor: AppColors.background,
@@ -188,7 +254,11 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
                         textInputAction: TextInputAction.done,
 
                         onCompleted: (otp) {
-                          if (isLoading || isResendLoading) return;
+                          if (isLoading ||
+                              isResendLoading ||
+                              _remainingSeconds == 0) {
+                            return;
+                          }
 
                           context.read<VerifyOtpBloc>().add(
                             VerifyOtpSubmitted(email: widget.email, otp: otp),
@@ -245,78 +315,87 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
                       ),
                       SizedBox(height: 24.h),
 
+                     
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          if (_remainingSeconds > 0)
+                            Text(
+                              'OTP expires in ${_formatTime()}',
+                              style: TextStyle(
+                                fontSize: 13.sp,
+                                fontWeight: FontWeight.w500,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+
+                          if (_remainingSeconds == 0)
+                            TextButton(
+                              onPressed:
+                                  isLoading || isResendLoading
+                                      ? null
+                                      : () {
+                                        context.read<VerifyOtpBloc>().add(
+                                          ResendOtpRequested(
+                                            email: widget.email,
+                                          ),
+                                        );
+                                      },
+                              child:
+                                  isResendLoading
+                                      ? SizedBox(
+                                        width: 18.w,
+                                        height: 18.w,
+                                        child: const CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                      : Text(
+                                        'Resend OTP',
+                                        style: TextStyle(
+                                          fontSize: 14.sp,
+                                          fontWeight: FontWeight.w600,
+                                          color: AppColors.primary,
+                                        ),
+                                      ),
+                            ),
+                        ],
+                      ),
+
+                      SizedBox(height: 16.h),
+
                       AppButton(
                         title: 'Verify OTP',
                         isLoading: isLoading,
+                        onPressed: () {
+                          final otp = otpController.text.trim();
 
-                        onPressed:
-                            isLoading || isResendLoading
-                                ? null
-                                : () {
-                                  final otp = otpController.text.trim();
+                          if (otp.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Please enter OTP')),
+                            );
+                            return;
+                          }
 
-                                  if (otp.isEmpty) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text('Please enter OTP'),
-                                      ),
-                                    );
+                          if (otp.length != 6) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  'Please enter a valid 6-digit OTP',
+                                ),
+                              ),
+                            );
+                            return;
+                          }
 
-                                    return;
-                                  }
-
-                                  if (otp.length != 6) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                          'Please enter a valid 6-digit OTP',
-                                        ),
-                                      ),
-                                    );
-
-                                    return;
-                                  }
-
-                                  context.read<VerifyOtpBloc>().add(
-                                    VerifyOtpSubmitted(
-                                      email: widget.email,
-                                      otp: otp,
-                                    ),
-                                  );
-                                },
+                          context.read<VerifyOtpBloc>().add(
+                            VerifyOtpSubmitted(email: widget.email, otp: otp),
+                          );
+                        },
                       ),
 
                       SizedBox(height: 20.h),
 
-                      Center(
-                        child: TextButton(
-                          onPressed:
-                              isLoading || isResendLoading
-                                  ? null
-                                  : () {
-                                    context.read<VerifyOtpBloc>().add(
-                                      ResendOtpRequested(email: widget.email),
-                                    );
-                                  },
-                          child:
-                              isResendLoading
-                                  ? SizedBox(
-                                    width: 18.w,
-                                    height: 18.w,
-                                    child: const CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                    ),
-                                  )
-                                  : Text(
-                                    'Resend OTP',
-                                    style: TextStyle(
-                                      fontSize: 14.sp,
-                                      fontWeight: FontWeight.w600,
-                                      color: AppColors.primary,
-                                    ),
-                                  ),
-                        ),
-                      ),
                     ],
                   ),
                 ),

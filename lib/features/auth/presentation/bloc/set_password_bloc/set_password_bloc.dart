@@ -4,13 +4,11 @@ import 'package:medtech_project/features/auth/domain/repositories/auth_repositor
 import 'set_password_event.dart';
 import 'set_password_state.dart';
 
-class SetPasswordBloc
-    extends Bloc<SetPasswordEvent, SetPasswordState> {
+class SetPasswordBloc extends Bloc<SetPasswordEvent, SetPasswordState> {
   final AuthRepository authRepository;
 
-  SetPasswordBloc({
-    required this.authRepository,
-  }) : super(const SetPasswordInitial()) {
+  SetPasswordBloc({required this.authRepository})
+    : super(const SetPasswordInitial()) {
     on<SetPasswordSubmitted>(_onSetPasswordSubmitted);
   }
 
@@ -22,22 +20,14 @@ class SetPasswordBloc
 
     try {
       await authRepository.setPassword(
-        otpId: event.otpId,
         password: event.password,
         confirmPassword: event.confirmPassword,
+        passwordSetupToken: event.passwordSetupToken,
       );
 
-      emit(
-        const SetPasswordSuccess(
-          'Password set successfully',
-        ),
-      );
+      emit(const SetPasswordSuccess('Password set successfully'));
     } catch (e) {
-      emit(
-        SetPasswordFailure(
-          e.toString().replaceFirst('Exception: ', ''),
-        ),
-      );
+      emit(SetPasswordFailure(e.toString().replaceFirst('Exception: ', '')));
     }
   }
 }

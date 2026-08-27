@@ -146,12 +146,6 @@ class MedTechApp extends StatelessWidget {
 
     final profileRepository = ProfileRepositoryImpl(api: profileApi);
 
-    ShowcaseProductBloc(
-      repository: ShowcaseProductRepositoryImpl(
-        api: ShowcaseProductApi(apiService: ApiService()),
-      ),
-    );
-
     return ScreenUtilInit(
       designSize: const Size(360, 690),
       minTextAdapt: true,

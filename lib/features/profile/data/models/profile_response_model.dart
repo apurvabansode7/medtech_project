@@ -87,61 +87,160 @@ class ProfileData {
     required this.business,
   });
 
+  // factory ProfileData.fromJson(Map<String, dynamic> json) {
+  //   return ProfileData(
+  //     id: json['id'] ?? '',
+  //     referenceId: json['referenceId'] ?? '',
+  //     type: json['type'] ?? '',
+  //     businessName: json['businessName'] ?? '',
+  //     ownerName: json['ownerName'] ?? '',
+  //     profileImage: json['profileImage'],
+  //     gstNumber: json['gstNumber'] ?? '',
+  //     regionId: json['regionId'],
+  //     assignedMedicalRepresentativeId:
+  //         json['assignedMedicalRepresentativeId'],
+  //     region:
+  //         json['region'] != null
+  //             ? Region.fromJson(json['region'])
+  //             : null,
+  //     assignedMedicalRepresentative:
+  //         json['assignedMedicalRepresentative'] != null
+  //             ? MedicalRepresentative.fromJson(
+  //               json['assignedMedicalRepresentative'],
+  //             )
+  //             : null,
+  //     email: json['email'] ?? '',
+  //     phone: json['phone'] ?? '',
+  //     country: json['country'] ?? '',
+  //     isEmailVerified: json['isEmailVerified'] ?? false,
+  //     isPhoneVerified: json['isPhoneVerified'] ?? false,
+  //     status: json['status'] ?? '',
+  //     approvalStatus: json['approvalStatus'] ?? '',
+  //     approvalReason: json['approvalReason'],
+  //     isBlocked: json['isBlocked'] ?? false,
+  //     mustChangePassword: json['mustChangePassword'] ?? false,
+  //     isOnboarded: json['isOnboarded'] ?? false,
+  //     lastLoginAt:
+  //         json['lastLoginAt'] != null
+  //             ? DateTime.tryParse(json['lastLoginAt'])
+  //             : null,
+  //     walletId: json['walletId'],
+  //     availableBalance: json['availableBalance'] ?? 0,
+  //     totalPointsEarned: json['totalPointsEarned'] ?? 0,
+  //     createdAt:
+  //         json['createdAt'] != null
+  //             ? DateTime.tryParse(json['createdAt'])
+  //             : null,
+  //     updatedAt:
+  //         json['updatedAt'] != null
+  //             ? DateTime.tryParse(json['updatedAt'])
+  //             : null,
+  //     business:
+  //         (json['business'] as List<dynamic>?)
+  //             ?.map((e) => Business.fromJson(e))
+  //             .toList() ??
+  //         [],
+  //   );
+  // }
   factory ProfileData.fromJson(Map<String, dynamic> json) {
-    return ProfileData(
-      id: json['id'] ?? '',
-      referenceId: json['referenceId'] ?? '',
-      type: json['type'] ?? '',
-      businessName: json['businessName'] ?? '',
-      ownerName: json['ownerName'] ?? '',
-      profileImage: json['profileImage'],
-      gstNumber: json['gstNumber'] ?? '',
-      regionId: json['regionId'],
-      assignedMedicalRepresentativeId:
-          json['assignedMedicalRepresentativeId'],
-      region:
-          json['region'] != null
-              ? Region.fromJson(json['region'])
-              : null,
-      assignedMedicalRepresentative:
-          json['assignedMedicalRepresentative'] != null
-              ? MedicalRepresentative.fromJson(
-                json['assignedMedicalRepresentative'],
-              )
-              : null,
-      email: json['email'] ?? '',
-      phone: json['phone'] ?? '',
-      country: json['country'] ?? '',
-      isEmailVerified: json['isEmailVerified'] ?? false,
-      isPhoneVerified: json['isPhoneVerified'] ?? false,
-      status: json['status'] ?? '',
-      approvalStatus: json['approvalStatus'] ?? '',
-      approvalReason: json['approvalReason'],
-      isBlocked: json['isBlocked'] ?? false,
-      mustChangePassword: json['mustChangePassword'] ?? false,
-      isOnboarded: json['isOnboarded'] ?? false,
-      lastLoginAt:
-          json['lastLoginAt'] != null
-              ? DateTime.tryParse(json['lastLoginAt'])
-              : null,
-      walletId: json['walletId'],
-      availableBalance: json['availableBalance'] ?? 0,
-      totalPointsEarned: json['totalPointsEarned'] ?? 0,
-      createdAt:
-          json['createdAt'] != null
-              ? DateTime.tryParse(json['createdAt'])
-              : null,
-      updatedAt:
-          json['updatedAt'] != null
-              ? DateTime.tryParse(json['updatedAt'])
-              : null,
-      business:
-          (json['business'] as List<dynamic>?)
-              ?.map((e) => Business.fromJson(e))
-              .toList() ??
-          [],
-    );
-  }
+  print('PROFILE JSON: $json');
+
+  print('id: ${json['id']} -> ${json['id'].runtimeType}');
+  print('referenceId: ${json['referenceId']} -> ${json['referenceId'].runtimeType}');
+  print('businessName: ${json['businessName']} -> ${json['businessName'].runtimeType}');
+  print('ownerName: ${json['ownerName']} -> ${json['ownerName'].runtimeType}');
+  print('profileImage: ${json['profileImage']} -> ${json['profileImage'].runtimeType}');
+  print('gstNumber: ${json['gstNumber']} -> ${json['gstNumber'].runtimeType}');
+  print('region: ${json['region']} -> ${json['region'].runtimeType}');
+  print(
+    'assignedMedicalRepresentative: '
+    '${json['assignedMedicalRepresentative']} -> '
+    '${json['assignedMedicalRepresentative'].runtimeType}',
+  );
+  print('business: ${json['business']} -> ${json['business'].runtimeType}');
+
+  return ProfileData(
+    id: json['id']?.toString() ?? '',
+    referenceId: json['referenceId']?.toString() ?? '',
+    type: json['type']?.toString() ?? '',
+    businessName: json['businessName']?.toString() ?? '',
+    ownerName: json['ownerName']?.toString() ?? '',
+
+    profileImage:
+        json['profileImage'] is Map
+            ? json['profileImage']['url']?.toString()
+            : json['profileImage']?.toString(),
+
+    gstNumber: json['gstNumber']?.toString() ?? '',
+
+    regionId: json['regionId']?.toString(),
+
+    assignedMedicalRepresentativeId:
+        json['assignedMedicalRepresentativeId']?.toString(),
+
+    region:
+        json['region'] is Map<String, dynamic>
+            ? Region.fromJson(json['region'])
+            : null,
+
+    assignedMedicalRepresentative:
+        json['assignedMedicalRepresentative'] is Map<String, dynamic>
+            ? MedicalRepresentative.fromJson(
+              json['assignedMedicalRepresentative'],
+            )
+            : null,
+
+    email: json['email']?.toString() ?? '',
+    phone: json['phone']?.toString() ?? '',
+    country: json['country']?.toString() ?? '',
+
+    isEmailVerified: json['isEmailVerified'] == true,
+    isPhoneVerified: json['isPhoneVerified'] == true,
+
+    status: json['status']?.toString() ?? '',
+    approvalStatus: json['approvalStatus']?.toString() ?? '',
+    approvalReason: json['approvalReason']?.toString(),
+
+    isBlocked: json['isBlocked'] == true,
+    mustChangePassword: json['mustChangePassword'] == true,
+    isOnboarded: json['isOnboarded'] == true,
+
+    lastLoginAt:
+        json['lastLoginAt'] != null
+            ? DateTime.tryParse(json['lastLoginAt'].toString())
+            : null,
+
+    walletId: json['walletId']?.toString(),
+
+    availableBalance:
+        json['availableBalance'] is num
+            ? json['availableBalance']
+            : num.tryParse(json['availableBalance']?.toString() ?? '') ?? 0,
+
+    totalPointsEarned:
+        json['totalPointsEarned'] is num
+            ? json['totalPointsEarned']
+            : num.tryParse(json['totalPointsEarned']?.toString() ?? '') ?? 0,
+
+    createdAt:
+        json['createdAt'] != null
+            ? DateTime.tryParse(json['createdAt'].toString())
+            : null,
+
+    updatedAt:
+        json['updatedAt'] != null
+            ? DateTime.tryParse(json['updatedAt'].toString())
+            : null,
+
+    business:
+        json['business'] is List
+            ? (json['business'] as List)
+                .whereType<Map<String, dynamic>>()
+                .map((e) => Business.fromJson(e))
+                .toList()
+            : [],
+  );
+}
 }
 
 class Region {

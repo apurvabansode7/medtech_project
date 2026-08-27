@@ -3,13 +3,12 @@ abstract class SetPasswordEvent {
 }
 
 class SetPasswordSubmitted extends SetPasswordEvent {
-  final String otpId;
   final String password;
   final String confirmPassword;
-
+  final String passwordSetupToken;
   const SetPasswordSubmitted({
-    required this.otpId,
     required this.password,
     required this.confirmPassword,
+     required this.passwordSetupToken,
   });
 }

@@ -27,16 +27,17 @@ class VerifyOtpBloc
     emit(const VerifyOtpLoading());
 
     try {
-      final otpId = await authRepository.verifyOtp(
-        email: event.email,
-        otp: event.otp,
-      );
+final result = await authRepository.verifyOtp(
+  email: event.email,
+  otp: event.otp,
+);
 
-      emit(
-        VerifyOtpSuccess(
-          otpId: otpId,
-        ),
-      );
+emit(
+  VerifyOtpSuccess(
+    accessToken: result['accessToken'],
+    refreshToken: result['refreshToken'],
+  ),
+);
     } catch (e) {
       emit(
         VerifyOtpFailure(

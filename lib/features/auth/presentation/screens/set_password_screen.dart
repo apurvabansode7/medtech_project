@@ -5,34 +5,33 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:medtech_project/components/app_buttons.dart';
 import 'package:medtech_project/components/apptextfield.dart';
 import 'package:medtech_project/constant/app_colors.dart';
+
 import 'package:medtech_project/features/auth/presentation/bloc/set_password_bloc/set_password_bloc.dart';
 import 'package:medtech_project/features/auth/presentation/bloc/set_password_bloc/set_password_event.dart';
 import 'package:medtech_project/features/auth/presentation/bloc/set_password_bloc/set_password_state.dart';
+
 import 'package:medtech_project/features/auth/presentation/screens/login_screen.dart';
+import 'package:medtech_project/features/auth/presentation/widgets/password_rule_widget.dart';
 import 'package:medtech_project/utils/app_snack_bar.dart';
 
 class SetPasswordScreen extends StatefulWidget {
-  final String otpId;
+  final String passwordSetupToken;
 
-  const SetPasswordScreen({
-    super.key,
-    required this.otpId,
-  });
+  const SetPasswordScreen({super.key, required this.passwordSetupToken});
 
   @override
-  State<SetPasswordScreen> createState() =>
-      _SetPasswordScreenState();
+  State<SetPasswordScreen> createState() => _SetPasswordScreenState();
 }
 
 class _SetPasswordScreenState extends State<SetPasswordScreen> {
-  final TextEditingController passwordController =
-      TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
 
   final TextEditingController confirmPasswordController =
       TextEditingController();
 
   bool obscurePassword = true;
   bool obscureConfirmPassword = true;
+  String password = '';
 
   @override
   void dispose() {
@@ -43,8 +42,7 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
 
   void _submit() {
     final password = passwordController.text.trim();
-    final confirmPassword =
-        confirmPasswordController.text.trim();
+    final confirmPassword = confirmPasswordController.text.trim();
 
     if (password.isEmpty) {
       AppSnackbar.error('Please enter your new password');
@@ -61,19 +59,13 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
       return;
     }
 
-    debugPrint('========== SET PASSWORD ==========');
-    debugPrint('OTP ID: ${widget.otpId}');
-    debugPrint('Password: $password');
-    debugPrint('Confirm Password: $confirmPassword');
-    debugPrint('==================================');
-
     context.read<SetPasswordBloc>().add(
-          SetPasswordSubmitted(
-            otpId: widget.otpId,
-            password: password,
-            confirmPassword: confirmPassword,
-          ),
-        );
+      SetPasswordSubmitted(
+        password: password,
+        confirmPassword: confirmPassword,
+        passwordSetupToken: widget.passwordSetupToken,
+      ),
+    );
   }
 
   @override
@@ -83,13 +75,9 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
         if (state is SetPasswordSuccess) {
           AppSnackbar.success(state.message);
 
-          // Password successfully created.
-          // Now user can login with email + new password.
           Navigator.pushAndRemoveUntil(
             context,
-            MaterialPageRoute(
-              builder: (_) => const LoginScreen(),
-            ),
+            MaterialPageRoute(builder: (_) => const LoginScreen()),
             (route) => false,
           );
         }
@@ -99,51 +87,33 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
         }
       },
       builder: (context, state) {
-        final isLoading =
-            state is SetPasswordLoading;
+        final isLoading = state is SetPasswordLoading;
 
         return Scaffold(
           backgroundColor: AppColors.background,
+
           appBar: AppBar(
             backgroundColor: AppColors.background,
             surfaceTintColor: AppColors.transparent,
             elevation: 0,
-            leading: IconButton(
-              onPressed: isLoading
-                  ? null
-                  : () {
-                      Navigator.pop(context);
-                    },
-              icon: Icon(
-                Icons.arrow_back,
-                size: 24.sp,
-                color: AppColors.textPrimary,
-              ),
-            ),
           ),
           body: SafeArea(
             child: Center(
               child: SingleChildScrollView(
-                padding: EdgeInsets.symmetric(
-                  horizontal: 20.w,
-                  vertical: 24.h,
-                ),
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 20.h),
                 child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxWidth: 450.w,
-                  ),
+                  constraints: BoxConstraints(maxWidth: 400.w),
                   child: Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Icon
                       Center(
                         child: Container(
                           width: 80.w,
                           height: 80.w,
                           decoration: BoxDecoration(
                             color: AppColors.primary,
-                            borderRadius:
-                                BorderRadius.circular(22.r),
+                            borderRadius: BorderRadius.circular(22.r),
                           ),
                           child: Icon(
                             Icons.lock_outline_rounded,
@@ -155,6 +125,7 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
 
                       SizedBox(height: 24.h),
 
+                      // Title
                       Center(
                         child: Text(
                           'Set Password',
@@ -162,22 +133,21 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
                           style: TextStyle(
                             fontSize: 26.sp,
                             fontWeight: FontWeight.bold,
-                            color:
-                                AppColors.textPrimary,
+                            color: AppColors.textPrimary,
                           ),
                         ),
                       ),
 
                       SizedBox(height: 10.h),
 
+                      // Subtitle
                       Center(
                         child: Text(
                           'Create a password for your account.',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 14.sp,
-                            color:
-                                AppColors.textSecondary,
+                            color: AppColors.textSecondary,
                             height: 1.5,
                           ),
                         ),
@@ -185,18 +155,26 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
 
                       SizedBox(height: 32.h),
 
+                      // New Password
                       AppTextField(
                         controller: passwordController,
                         label: 'New Password',
                         hint: 'Enter new password',
                         obscureText: obscurePassword,
+                        onChanged: (value) {
+                          setState(() {
+                            password = value;
+                          });
+                        },
                         suffixIcon: IconButton(
-                          onPressed: () {
-                            setState(() {
-                              obscurePassword =
-                                  !obscurePassword;
-                            });
-                          },
+                          onPressed:
+                              isLoading
+                                  ? null
+                                  : () {
+                                    setState(() {
+                                      obscurePassword = !obscurePassword;
+                                    });
+                                  },
                           icon: Icon(
                             obscurePassword
                                 ? Icons.visibility_off
@@ -204,23 +182,28 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
                           ),
                         ),
                       ),
+                      SizedBox(height: 10.h),
+
+                      PasswordRulesWidget(password: password),
 
                       SizedBox(height: 20.h),
 
+                      // Confirm Password
                       AppTextField(
-                        controller:
-                            confirmPasswordController,
+                        controller: confirmPasswordController,
                         label: 'Confirm Password',
                         hint: 'Confirm new password',
-                        obscureText:
-                            obscureConfirmPassword,
+                        obscureText: obscureConfirmPassword,
                         suffixIcon: IconButton(
-                          onPressed: () {
-                            setState(() {
-                              obscureConfirmPassword =
-                                  !obscureConfirmPassword;
-                            });
-                          },
+                          onPressed:
+                              isLoading
+                                  ? null
+                                  : () {
+                                    setState(() {
+                                      obscureConfirmPassword =
+                                          !obscureConfirmPassword;
+                                    });
+                                  },
                           icon: Icon(
                             obscureConfirmPassword
                                 ? Icons.visibility_off
@@ -229,42 +212,12 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
                         ),
                       ),
 
-                      SizedBox(height: 28.h),
+                      SizedBox(height: 30.h),
 
                       AppButton(
                         title: 'Set Password',
                         isLoading: isLoading,
-                        onPressed:
-                            isLoading ? null : _submit,
-                      ),
-
-                      SizedBox(height: 20.h),
-
-                      Center(
-                        child: TextButton(
-                          onPressed: isLoading
-                              ? null
-                              : () {
-                                  Navigator.pushAndRemoveUntil(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) =>
-                                          const LoginScreen(),
-                                    ),
-                                    (route) => false,
-                                  );
-                                },
-                          child: Text(
-                            'Back to Login',
-                            style: TextStyle(
-                              fontSize: 14.sp,
-                              fontWeight:
-                                  FontWeight.w600,
-                              color:
-                                  AppColors.primary,
-                            ),
-                          ),
-                        ),
+                        onPressed: isLoading ? null : _submit,
                       ),
                     ],
                   ),

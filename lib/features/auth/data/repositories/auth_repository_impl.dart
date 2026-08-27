@@ -7,61 +7,88 @@ import 'package:medtech_project/utils/app_prefrences.dart';
 class AuthRepositoryImpl implements AuthRepository {
   final AuthApi authApi;
 
-  AuthRepositoryImpl({
-    required this.authApi,
-  });
+  AuthRepositoryImpl({required this.authApi});
 
   @override
-  Future<void> login({
+  Future<Map<String, dynamic>> login({
     required String email,
     required String password,
   }) async {
     try {
-      final response = await authApi.login(
-        email: email,
-        password: password,
-      );
+      final response = await authApi.login(email: email, password: password);
 
-      if (response.statusCode == 200 ||
-          response.statusCode == 201) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
         final data = response.data['data'];
 
+        if (data == null) {
+          throw Exception('Login response data not found');
+        }
+
+        final mustChangePassword = data['mustChangePassword'] ?? false;
+
+        final passwordSetupToken = data['passwordSetupToken'];
+
         final accessToken = data['accessToken'];
+
         final refreshToken = data['refreshToken'];
 
-        await AppPreferences.setAccessToken(accessToken);
-        await AppPreferences.setRefreshToken(refreshToken);
-        await AppPreferences.setLoggedIn(true);
+        // Save normal access token if returned
+        if (accessToken != null && accessToken.toString().isNotEmpty) {
+          await AppPreferences.setAccessToken(accessToken.toString());
+        }
 
-        return;
+        // Save normal refresh token if returned
+        if (refreshToken != null && refreshToken.toString().isNotEmpty) {
+          await AppPreferences.setRefreshToken(refreshToken.toString());
+        }
+              await AppPreferences.setLoggedIn(true);
+        return {
+          'mustChangePassword': mustChangePassword,
+          'passwordSetupToken': passwordSetupToken?.toString(),
+        };
       }
 
-      throw Exception(
-        response.data?['message'] ?? 'Login failed',
-      );
+      throw Exception(response.data?['message'] ?? 'Login failed');
     } on DioException catch (e) {
-      throw Exception(
-        e.response?.data?['message'] ??
-            'Something went wrong',
-      );
+      debugPrint('Login Error: ${e.response?.data}');
+
+      throw Exception(e.response?.data?['message'] ?? 'Something went wrong');
     }
   }
 
   @override
-Future<void> logout() async {
-  try {
-    final response = await authApi.logout();
+  Future<void> logout() async {
+    try {
+      final response = await authApi.logout();
 
-    if (response.statusCode == 200 ||
-        response.statusCode == 201) {
-      await AppPreferences.logout();
-      return;
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        await AppPreferences.logout();
+        return;
+      }
+
+      throw Exception(response.data?['message'] ?? 'Logout failed');
+    } on DioException catch (e) {
+      throw Exception(e.response?.data?['message'] ?? 'Something went wrong');
+    }
+  }@override
+Future<String> loginOtp({required String email}) async {
+  try {
+    final response = await authApi.loginWithOtp(
+      email: email,
+    );
+
+    debugPrint('LOGIN OTP RESPONSE: ${response.data}');
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return 'OTP sent successfully';
     }
 
     throw Exception(
-      response.data?['message'] ?? 'Logout failed',
+      response.data?['message'] ?? 'Failed to send OTP',
     );
   } on DioException catch (e) {
+    debugPrint('LOGIN OTP ERROR: ${e.response?.data}');
+
     throw Exception(
       e.response?.data?['message'] ??
           'Something went wrong',
@@ -70,32 +97,50 @@ Future<void> logout() async {
 }
 
   @override
-  Future<void> forgotPassword({
-    required String email,
-  }) async {
+  Future<void> forgotPassword({required String email}) async {
     try {
-      final response = await authApi.forgotPassword(
-        email: email,
-      );
+      final response = await authApi.forgotPassword(email: email);
 
-      if (response.statusCode == 200 ||
-          response.statusCode == 201) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
         return;
       }
 
-      throw Exception(
-        response.data?['message'] ??
-            'Failed to send OTP',
-      );
+      throw Exception(response.data?['message'] ?? 'Failed to send OTP');
     } on DioException catch (e) {
-      throw Exception(
-        e.response?.data?['message'] ??
-            'Something went wrong',
-      );
+      throw Exception(e.response?.data?['message'] ?? 'Something went wrong');
     }
   }
-@override
-Future<String> verifyOtp({
+
+  // @override
+  // Future<String> verifyOtp({required String email, required String otp}) async {
+  //   try {
+  //     final response = await authApi.verifyOtp(email: email, otp: otp);
+
+  //     if (response.statusCode == 200 || response.statusCode == 201) {
+  //       final data = response.data['data'];
+
+  //       if (data == null) {
+  //         throw Exception('OTP response data not found');
+  //       }
+
+  //       // Backend returns "optId"
+  //       final optId = data['optId'];
+
+  //       if (optId == null || optId.toString().isEmpty) {
+  //         throw Exception('OTP ID not received');
+  //       }
+
+  //       return optId.toString();
+  //     }
+
+  //     throw Exception(response.data?['message'] ?? 'OTP verification failed');
+  //   } on DioException catch (e) {
+  //     throw Exception(e.response?.data?['message'] ?? 'Something went wrong');
+  //   }
+  // }
+
+  @override
+Future<Map<String, dynamic>> verifyOtp({
   required String email,
   required String otp,
 }) async {
@@ -105,25 +150,52 @@ Future<String> verifyOtp({
       otp: otp,
     );
 
+    debugPrint('VERIFY OTP RESPONSE: ${response.data}');
+
     if (response.statusCode == 200 ||
         response.statusCode == 201) {
       final data = response.data['data'];
 
       if (data == null) {
-        throw Exception('OTP response data not found');
+        throw Exception(
+          'OTP verification response data not found',
+        );
       }
 
-      // Backend returns "optId"
-      final optId = data['optId'];
+      final accessToken = data['accessToken'];
+      final refreshToken = data['refreshToken'];
 
-      if (optId == null || optId.toString().isEmpty) {
-        throw Exception('OTP ID not received');
+      if (accessToken == null ||
+          accessToken.toString().isEmpty) {
+        throw Exception(
+          'Access token not received after OTP verification',
+        );
       }
 
-      debugPrint('OTP verified');
-      debugPrint('optId: $optId');
+      if (refreshToken == null ||
+          refreshToken.toString().isEmpty) {
+        throw Exception(
+          'Refresh token not received after OTP verification',
+        );
+      }
 
-      return optId.toString();
+      // Save final login tokens
+      await AppPreferences.setAccessToken(
+        accessToken.toString(),
+      );
+
+      await AppPreferences.setRefreshToken(
+        refreshToken.toString(),
+      );
+
+      // User is now actually logged in
+      await AppPreferences.setLoggedIn(true);
+
+      return {
+        'accessToken': accessToken.toString(),
+        'refreshToken': refreshToken.toString(),
+        'sessionId': data['sessionId']?.toString(),
+      };
     }
 
     throw Exception(
@@ -131,7 +203,9 @@ Future<String> verifyOtp({
           'OTP verification failed',
     );
   } on DioException catch (e) {
-    debugPrint('VERIFY OTP ERROR: ${e.response?.data}');
+    debugPrint(
+      'Verify OTP Error: ${e.response?.data}',
+    );
 
     throw Exception(
       e.response?.data?['message'] ??
@@ -139,91 +213,66 @@ Future<String> verifyOtp({
     );
   }
 }
+  @override
+  Future<void> resendOtp({required String email}) async {
+    try {
+      final response = await authApi.resendOtp(email: email);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return;
+      }
+
+      throw Exception(response.data?['message'] ?? 'Failed to resend OTP');
+    } on DioException catch (e) {
+      throw Exception(e.response?.data?['message'] ?? 'Something went wrong');
+    }
+  }
 
   @override
-Future<void> resendOtp({
-  required String email,
-}) async {
-  try {
-    final response = await authApi.resendOtp(
-      email: email,
-    );
+  Future<void> setPassword({
+    required String password,
+    required String confirmPassword,
+    required String passwordSetupToken,
+  }) async {
+    try {
+      final response = await authApi.setPassword(
+        password: password,
+        confirmPassword: confirmPassword,
+        passwordSetupToken: passwordSetupToken,
+      );
 
-    if (response.statusCode == 200 ||
-        response.statusCode == 201) {
-      return;
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return;
+      }
+
+      throw Exception(response.data?['message'] ?? 'Failed to set password');
+    } on DioException catch (e) {
+      throw Exception(e.response?.data?['message'] ?? 'Something went wrong');
     }
-
-    throw Exception(
-      response.data?['message'] ??
-          'Failed to resend OTP',
-    );
-  } on DioException catch (e) {
-    throw Exception(
-      e.response?.data?['message'] ??
-          'Something went wrong',
-    );
   }
-}
-@override
-Future<void> setPassword({
-  required String otpId,
-  required String password,
-  required String confirmPassword,
-}) async {
-  try {
-    final response = await authApi.setPassword(
-      otpId: otpId,
-      password: password,
-      confirmPassword: confirmPassword,
-    );
-
-    if (response.statusCode == 200 ||
-        response.statusCode == 201) {
-      return;
-    }
-
-    throw Exception(
-      response.data?['message'] ?? 'Failed to set password',
-    );
-  } on DioException catch (e) {
-    throw Exception(
-      e.response?.data?['message'] ??
-          'Something went wrong',
-    );
-  }
-}
 
   @override
   Future<void> resetPassword({
     required String otpId,
-   required String email,
+    required String email,
     required String password,
     required String confirmPassword,
   }) async {
     try {
       final response = await authApi.resetPassword(
         otpId: otpId,
-      email: email,
+        email: email,
         password: password,
         confirmPassword: confirmPassword,
       );
 
-      if (response.statusCode == 200 ||
-          response.statusCode == 201) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
         return;
       }
 
-      throw Exception(
-        response.data?['message'] ??
-            'Password reset failed',
-      );
+      throw Exception(response.data?['message'] ?? 'Password reset failed');
     } on DioException catch (e) {
-      throw Exception(
-        e.response?.data?['message'] ??
-            'Something went wrong',
-      );
+      throw Exception(e.response?.data?['message'] ?? 'Something went wrong');
     }
   }
-
 }

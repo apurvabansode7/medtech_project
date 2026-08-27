@@ -10,6 +10,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     required this.repository,
   }) : super(const ProfileInitial()) {
     on<LoadProfile>(_onLoadProfile);
+    on<UpdateProfile>(_onUpdateProfile);
   }
 
   Future<void> _onLoadProfile(
@@ -37,4 +38,33 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       );
     }
   }
+  Future<void> _onUpdateProfile(
+    UpdateProfile event,
+    Emitter<ProfileState> emit,
+  ) async {
+    emit(const ProfileUpdateLoading());
+
+    try {
+      final profile = await repository.updateProfile(
+        data: event.data,
+        
+      );
+
+      emit(
+        ProfileUpdateSuccess(
+          profile: profile,
+        ),
+      );
+    } catch (e) {
+      emit(
+        ProfileUpdateFailure(
+          e.toString().replaceFirst(
+            'Exception: ',
+            '',
+          ),
+        ),
+      );
+    }
+  }
+
 }

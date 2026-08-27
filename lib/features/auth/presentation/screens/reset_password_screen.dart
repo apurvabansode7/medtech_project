@@ -8,6 +8,7 @@ import 'package:medtech_project/constant/app_colors.dart';
 import 'package:medtech_project/features/auth/presentation/bloc/reset_password_bloc/reset_bloc.dart';
 import 'package:medtech_project/features/auth/presentation/bloc/reset_password_bloc/reset_password_event.dart';
 import 'package:medtech_project/features/auth/presentation/bloc/reset_password_bloc/reset_password_state.dart';
+import 'package:medtech_project/features/auth/presentation/widgets/password_rule_widget.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
   final String email;
@@ -31,6 +32,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
   bool obscurePassword = true;
   bool obscureConfirmPassword = true;
+  bool _isSubmitting = false;
+  String password = '';
 
   @override
   void dispose() {
@@ -44,6 +47,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     return BlocConsumer<ResetBloc, ResetPasswordState>(
       listener: (context, state) {
         if (state is ResetPasswordSuccess) {
+          if (!mounted) return;
+
+          _isSubmitting = false;
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Password reset successfully'),
@@ -56,6 +62,11 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         }
 
         if (state is ResetPasswordFailure) {
+          if (!mounted) return;
+
+          setState(() {
+            _isSubmitting = false;
+          });
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(state.message), backgroundColor: Colors.red),
           );
@@ -64,6 +75,14 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
       builder: (context, state) {
         final isLoading = state is ResetPasswordLoading;
+        final password = passwordController.text.trim();
+        final confirmPassword = confirmPasswordController.text.trim();
+
+        final canSubmit =
+            password.isNotEmpty &&
+            confirmPassword.isNotEmpty &&
+            !isLoading &&
+            !_isSubmitting;
 
         return Scaffold(
           backgroundColor: AppColors.background,
@@ -163,6 +182,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                         label: 'New Password',
                         hint: 'Enter new password',
                         obscureText: obscurePassword,
+                        onChanged: (_) {
+                          setState(() {});
+                        },
                         suffixIcon: IconButton(
                           onPressed: () {
                             setState(() {
@@ -176,6 +198,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                           ),
                         ),
                       ),
+                      SizedBox(height: 10.h),
+
+                      PasswordRulesWidget(password: password),
 
                       SizedBox(height: 20.h),
 
@@ -184,6 +209,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                         label: 'Confirm Password',
                         hint: 'Confirm new password',
                         obscureText: obscureConfirmPassword,
+                        onChanged: (_) {
+                          setState(() {});
+                        },
                         suffixIcon: IconButton(
                           onPressed: () {
                             setState(() {
@@ -205,17 +233,25 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                         isLoading: isLoading,
 
                         onPressed:
-                            isLoading
-                                ? null
-                                : () {
+                            canSubmit
+                                ? () {
+                                  // Immediately prevent multiple taps
+                                  setState(() {
+                                    _isSubmitting = true;
+                                  });
+
                                   final password =
                                       passwordController.text.trim();
 
                                   final confirmPassword =
                                       confirmPasswordController.text.trim();
 
-                                  // Empty password
+                                  // Safety validation
                                   if (password.isEmpty) {
+                                    setState(() {
+                                      _isSubmitting = false;
+                                    });
+
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
                                         content: Text(
@@ -226,8 +262,11 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                                     return;
                                   }
 
-                                  // Empty confirm password
                                   if (confirmPassword.isEmpty) {
+                                    setState(() {
+                                      _isSubmitting = false;
+                                    });
+
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
                                         content: Text(
@@ -238,8 +277,11 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                                     return;
                                   }
 
-                                  // Password mismatch
                                   if (password != confirmPassword) {
+                                    setState(() {
+                                      _isSubmitting = false;
+                                    });
+
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
                                         content: Text('Passwords do not match'),
@@ -248,12 +290,6 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                                     return;
                                   }
 
-                                  debugPrint('Email: ${widget.email}');
-                                  debugPrint('OTP ID: ${widget.otpId}');
-                                  debugPrint('Password: $password');
-                                  debugPrint(
-                                    'Confirm Password: $confirmPassword',
-                                  );
                                   context.read<ResetBloc>().add(
                                     ResetPasswordSubmitted(
                                       otpId: widget.otpId,
@@ -262,31 +298,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                                       confirmPassword: confirmPassword,
                                     ),
                                   );
-                                },
-                      ),
-
-                      SizedBox(height: 20.h),
-
-                      Center(
-                        child: TextButton(
-                          onPressed:
-                              isLoading
-                                  ? null
-                                  : () {
-                                    Navigator.popUntil(
-                                      context,
-                                      (route) => route.isFirst,
-                                    );
-                                  },
-                          child: Text(
-                            'Back to Login',
-                            style: TextStyle(
-                              fontSize: 14.sp,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.primary,
-                            ),
-                          ),
-                        ),
+                                }
+                                : null,
                       ),
                     ],
                   ),

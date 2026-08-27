@@ -13,9 +13,7 @@ class SetPasswordLoading extends SetPasswordState {
 class SetPasswordSuccess extends SetPasswordState {
   final String message;
 
-  const SetPasswordSuccess([
-    this.message = 'Password set successfully',
-  ]);
+  const SetPasswordSuccess([this.message = 'Password set successfully']);
 }
 
 class SetPasswordFailure extends SetPasswordState {
