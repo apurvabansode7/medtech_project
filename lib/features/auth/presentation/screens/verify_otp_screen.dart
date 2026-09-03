@@ -1,13 +1,15 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:medtech_project/components/app_buttons.dart';
 import 'package:medtech_project/constant/app_colors.dart';
+import 'package:medtech_project/core/utils/device_info_service.dart';
 import 'package:medtech_project/features/auth/presentation/bloc/verify_otp_bloc/verify_bloc.dart';
 import 'package:medtech_project/features/auth/presentation/bloc/verify_otp_bloc/verify_otp_event.dart';
 import 'package:medtech_project/features/auth/presentation/bloc/verify_otp_bloc/verify_otp_state.dart';
-import 'package:medtech_project/features/home/screens/main_home_screen.dart';
+import 'package:medtech_project/features/home/presentation/screens/main_home_screen.dart';
 import 'package:pinput/pinput.dart';
 
 class VerifyOtpScreen extends StatefulWidget {
@@ -29,6 +31,41 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
   void initState() {
     super.initState();
     _startOtpTimer();
+  }
+
+  Future<void> _submitOtp(String otp) async {
+    final info = await DeviceInfoService.getDeviceAndAppInfo();
+    final deviceId = info['deviceId']!;
+    final appVersion = info['appVersion']!;
+    final platform = info['platform']!;
+
+    if (!mounted) return;
+
+    context.read<VerifyOtpBloc>().add(
+      VerifyOtpSubmitted(
+        email: widget.email,
+        otp: otp,
+        deviceId: deviceId,
+        appVersion: appVersion,
+        platform: platform,
+      ),
+    );
+  }
+
+  Future<void> _resendOtp() async {
+    final info = await DeviceInfoService.getDeviceAndAppInfo();
+    final deviceId = info['deviceId']!;
+    final appVersion = info['appVersion']!;
+
+    if (!mounted) return;
+
+    context.read<VerifyOtpBloc>().add(
+      ResendOtpRequested(
+        email: widget.email,
+        deviceId: deviceId,
+        appVersion: appVersion,
+      ),
+    );
   }
 
   void _startOtpTimer() {
@@ -100,7 +137,7 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Login successful'),
-              backgroundColor: Colors.green,
+              backgroundColor: AppColors.success,
             ),
           );
 
@@ -124,7 +161,7 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('OTP resent successfully'),
-              backgroundColor: Colors.green,
+              backgroundColor: AppColors.success,
             ),
           );
         }
@@ -132,7 +169,7 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
         // RESEND FAILURE
         if (state is ResendOtpFailure) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message), backgroundColor: Colors.red),
+            SnackBar(content: Text(state.message), backgroundColor: AppColors.error),
           );
         }
       },
@@ -140,13 +177,6 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
       builder: (context, state) {
         final isLoading = state is VerifyOtpLoading;
         final isResendLoading = state is ResendOtpLoading;
-        final isOtpComplete = otpController.text.trim().length == 6;
-
-        final canVerifyOtp =
-            isOtpComplete &&
-            _remainingSeconds > 0 &&
-            !isLoading &&
-            !isResendLoading;
 
         return Scaffold(
           backgroundColor: AppColors.background,
@@ -260,9 +290,7 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
                             return;
                           }
 
-                          context.read<VerifyOtpBloc>().add(
-                            VerifyOtpSubmitted(email: widget.email, otp: otp),
-                          );
+                          _submitOtp(otp);
                         },
 
                         defaultPinTheme: PinTheme(
@@ -315,7 +343,6 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
                       ),
                       SizedBox(height: 24.h),
 
-                     
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -335,11 +362,7 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
                                   isLoading || isResendLoading
                                       ? null
                                       : () {
-                                        context.read<VerifyOtpBloc>().add(
-                                          ResendOtpRequested(
-                                            email: widget.email,
-                                          ),
-                                        );
+                                        _resendOtp();
                                       },
                               child:
                                   isResendLoading
@@ -388,14 +411,11 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
                             return;
                           }
 
-                          context.read<VerifyOtpBloc>().add(
-                            VerifyOtpSubmitted(email: widget.email, otp: otp),
-                          );
+                          _submitOtp(otp);
                         },
                       ),
 
                       SizedBox(height: 20.h),
-
                     ],
                   ),
                 ),

@@ -56,89 +56,94 @@ class _InterestedScreenState extends State<InterestedScreen> {
     return Scaffold(
       backgroundColor: AppColors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.primary,
         surfaceTintColor: AppColors.transparent,
         elevation: 0,
+         iconTheme: const IconThemeData(
+    color: AppColors.white,
+  ),
         title: Text(
           'Interested',
           style: TextStyle(
             fontSize: 20.sp,
-            fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
+            fontWeight: FontWeight.w500,
+            color: AppColors.white
           ),
         ),
       ),
-      body: BlocBuilder<InterestedProductBloc, InterestedProductState>(
-        builder: (context, state) {
-          // Initial loading
-          if (state is InterestedProductLoading) {
-            return const InterestedProductShimmer();
-          }
+      body: SafeArea(
+        child: BlocBuilder<InterestedProductBloc, InterestedProductState>(
+          builder: (context, state) {
+            // Initial loading
+            if (state is InterestedProductLoading) {
+              return const InterestedProductShimmer();
+            }
 
-          // Error
-          if (state is InterestedProductFailure) {
-            return _ErrorView(
-              message: state.message,
-              onRetry: () {
-                context.read<InterestedProductBloc>().add(
-                  LoadInterestedProducts(),
-                );
-              },
-            );
-          }
+            // Error
+            if (state is InterestedProductFailure) {
+              return _ErrorView(
+                message: state.message,
+                onRetry: () {
+                  context.read<InterestedProductBloc>().add(
+                    LoadInterestedProducts(),
+                  );
+                },
+              );
+            }
 
-          // Loaded
-          if (state is InterestedProductSuccess) {
-            if (state.products.isEmpty) {
-              return RefreshIndicator(
-                onRefresh: _refresh,
-                child: ListView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  children: [
-                    SizedBox(
-                      height: 300.h,
-                      child: Center(
-                        child: Text(
-                          'No interested products',
-                          style: TextStyle(
-                            fontSize: 14.sp,
-                            color: AppColors.textSecondary,
+            // Loaded
+            if (state is InterestedProductSuccess) {
+              if (state.products.isEmpty) {
+                return RefreshIndicator(
+                  onRefresh: _refresh,
+                  child: ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    children: [
+                      SizedBox(
+                        height: 300.h,
+                        child: Center(
+                          child: Text(
+                            'No interested products',
+                            style: TextStyle(
+                              fontSize: 14.sp,
+                              color: AppColors.textSecondary,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
+                );
+              }
+
+              return RefreshIndicator(
+                onRefresh: _refresh,
+                child: ListView.builder(
+                  controller: _scrollController,
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: EdgeInsets.all(16.w),
+                  itemCount:
+                      state.products.length + (state.isLoadingMore ? 1 : 0),
+                  itemBuilder: (context, index) {
+                    // Bottom loading indicator
+                    if (index == state.products.length) {
+                      return Padding(
+                        padding: EdgeInsets.symmetric(vertical: 16.h),
+                        child: const Center(child: CircularProgressIndicator()),
+                      );
+                    }
+
+                    final product = state.products[index];
+
+                    return InterestedProductCard(product: product);
+                  },
                 ),
               );
             }
 
-            return RefreshIndicator(
-              onRefresh: _refresh,
-              child: ListView.builder(
-                controller: _scrollController,
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: EdgeInsets.all(16.w),
-                itemCount:
-                    state.products.length + (state.isLoadingMore ? 1 : 0),
-                itemBuilder: (context, index) {
-                  // Bottom loading indicator
-                  if (index == state.products.length) {
-                    return Padding(
-                      padding: EdgeInsets.symmetric(vertical: 16.h),
-                      child: const Center(child: CircularProgressIndicator()),
-                    );
-                  }
-
-                  final product = state.products[index];
-
-                  return InterestedProductCard(product: product);
-                },
-              ),
-            );
-          }
-
-          return const SizedBox.shrink();
-        },
+            return const SizedBox.shrink();
+          },
+        ),
       ),
     );
   }

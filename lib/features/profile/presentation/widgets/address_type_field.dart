@@ -13,7 +13,7 @@ class AddressTypeField extends StatelessWidget {
 
   static const List<String> options = [
     'SHOP',
-    'GODOWN',
+   // 'GODOWN',
   ];
 
   @override
@@ -38,7 +38,7 @@ class AddressTypeField extends StatelessWidget {
         SizedBox(height: 6.h),
 
         DropdownButtonFormField<String>(
-          value: currentValue,
+          initialValue: currentValue,
           decoration: InputDecoration(
             filled: true,
             fillColor: Colors.white,

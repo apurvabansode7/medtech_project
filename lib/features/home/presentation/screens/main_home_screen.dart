@@ -10,15 +10,18 @@ import 'package:medtech_project/features/auth/presentation/bloc/login_bloc/auth_
 import 'package:medtech_project/features/auth/presentation/bloc/login_bloc/auth_event.dart';
 import 'package:medtech_project/features/auth/presentation/bloc/login_bloc/auth_state.dart';
 import 'package:medtech_project/features/auth/presentation/screens/login_screen.dart';
-import 'package:medtech_project/features/home/screens/home_screen.dart';
+import 'package:medtech_project/features/home/presentation/screens/home_screen.dart';
 import 'package:medtech_project/features/profile/presentation/bloc/profile.bloc.dart';
 import 'package:medtech_project/features/profile/presentation/bloc/profile_event.dart';
 import 'package:medtech_project/features/profile/presentation/bloc/profile_state.dart';
 import 'package:medtech_project/features/profile/presentation/screens/profile_screen.dart';
 import 'package:medtech_project/features/interested_product/presentation/screens/interested_product_screen.dart';
 import 'package:medtech_project/features/product/presentation/screens/product_screen.dart';
+import 'package:medtech_project/features/rewards/presentation/screens/claim_reward_screen.dart';
+import 'package:medtech_project/features/rewards/presentation/screens/reward_screen.dart';
 import 'package:medtech_project/features/scanner/presentation/screens/product_scanner_screen.dart';
 import 'package:medtech_project/features/setting/screens/setting_screen.dart';
+import 'package:medtech_project/features/subscribe/presentation/screens/subscribe_screen.dart';
 import 'package:medtech_project/features/wallet/presenation/screens/wallet_screen.dart';
 
 @RoutePage()
@@ -163,6 +166,16 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
                         ),
                       );
                     },
+                    onsubscribeTap: () {
+                      Navigator.pop(context);
+
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SubscriptionScreen(),
+                        ),
+                      );
+                    },
 
                     onWalletTap: () {
                       Navigator.pop(drawerContext);
@@ -172,6 +185,18 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
                         MaterialPageRoute(builder: (_) => const WalletScreen()),
                       );
                     },
+                    onRewardTap: () {
+                      Navigator.pop(drawerContext);
+
+                      // Navigate to the RewardScreen
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const RewardScreen()),
+                      );
+                    },
+                     onClaimRewardTap: (){
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => const ClaimRewardScreen()));
+                     },
 
                     onLogoutTap: () {
                       final authBloc = drawerContext.read<AuthBloc>();

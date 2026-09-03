@@ -278,65 +278,67 @@ class ProfileScreen extends StatelessWidget {
                       //     ],
                       //   ),
                       // ],
-                      // for the testing only 
+                      // for the testing only
                       if (profile.business.isNotEmpty) ...[
-  SizedBox(height: 22.h),
+                        SizedBox(height: 22.h),
 
-  _buildSectionTitle('Business Details'),
+                        _buildSectionTitle('Business Details'),
 
-  SizedBox(height: 10.h),
+                        SizedBox(height: 10.h),
 
-  Column(
-    children: profile.business.map((business) {
-      return Padding(
-        padding: EdgeInsets.only(bottom: 16.h),
-        child: _buildInfoCard(
-          children: [
-            _buildInfoRow(
-              icon: Icons.store_outlined,
-              title: 'Outlet',
-              value: business.outletName,
-            ),
+                        Column(
+                          children:
+                              profile.business.map((business) {
+                                return Padding(
+                                  padding: EdgeInsets.only(bottom: 16.h),
+                                  child: _buildInfoCard(
+                                    children: [
+                                      _buildInfoRow(
+                                        icon: Icons.store_outlined,
+                                        title: 'Outlet',
+                                        value: business.outletName,
+                                      ),
 
-            _buildInfoRow(
-              icon: Icons.person_outline,
-              title: 'Username',
-              value: business.userName,
-            ),
+                                      _buildInfoRow(
+                                        icon: Icons.person_outline,
+                                        title: 'Username',
+                                        value: business.userName,
+                                      ),
 
-            _buildInfoRow(
-              icon: Icons.badge_outlined,
-              title: 'PAN Number',
-              value: business.panNumber,
-            ),
+                                      _buildInfoRow(
+                                        icon: Icons.badge_outlined,
+                                        title: 'PAN Number',
+                                        value: business.panNumber,
+                                      ),
 
-            _buildInfoRow(
-              icon: Icons.medical_information_outlined,
-              title: 'Drug License',
-              value: business.drugLicenseNumber,
-            ),
+                                      _buildInfoRow(
+                                        icon:
+                                            Icons.medical_information_outlined,
+                                        title: 'Drug License',
+                                        value: business.drugLicenseNumber,
+                                      ),
 
-            _buildInfoRow(
-              icon: Icons.location_on_outlined,
-              title: 'Address',
-              value:
-                  '${business.addressLine1}, '
-                  '${business.city}, '
-                  '${business.state} - '
-                  '${business.pincode}',
-            ),
+                                      _buildInfoRow(
+                                        icon: Icons.location_on_outlined,
+                                        title: 'Address',
+                                        value:
+                                            '${business.addressLine1}, '
+                                            '${business.city}, '
+                                            '${business.state} - '
+                                            '${business.pincode}',
+                                      ),
 
-            _buildInfoRow(
-              icon: Icons.verified_outlined,
-              title: 'Approval',
-              value: business.approvalStatus,
-            ),
-          ],
-        ),
-      );
-    }).toList(),
-  ),
-],
+                                      _buildInfoRow(
+                                        icon: Icons.verified_outlined,
+                                        title: 'Approval',
+                                        value: business.approvalStatus,
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }).toList(),
+                        ),
+                      ],
                       SizedBox(height: 30.h),
                     ],
                   ),

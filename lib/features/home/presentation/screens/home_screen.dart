@@ -1,10 +1,17 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart' show BlocBuilder, ReadContext;
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:medtech_project/constant/app_colors.dart';
-import 'package:medtech_project/features/home/data/home_banner_dummy_data.dart';
-import 'package:medtech_project/features/home/widgets/home_banner.dart';
+import 'package:medtech_project/features/home/presentation/bloc/enroll_campaign_bloc.dart';
+import 'package:medtech_project/features/home/presentation/bloc/enroll_campaign_event.dart';
+import 'package:medtech_project/features/home/presentation/bloc/enroll_campaign_state.dart';
+import 'package:medtech_project/features/home/presentation/bloc/home_bloc.dart';
+import 'package:medtech_project/features/home/presentation/bloc/home_event.dart';
+import 'package:medtech_project/features/home/presentation/bloc/home_state.dart';
+import 'package:medtech_project/features/home/presentation/widgets/campaign_card.dart';
+import 'package:medtech_project/features/profile/presentation/bloc/profile.bloc.dart';
+import 'package:medtech_project/features/profile/presentation/bloc/profile_state.dart';
 
 import 'package:medtech_project/features/scan_history/presentation/bloc/scan_history_bloc.dart';
 import 'package:medtech_project/features/scan_history/presentation/bloc/scan_history_event.dart';
@@ -27,44 +34,41 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  bool isLoading = true;
+  final Set<String> _subscribedCampaignIds = {};
+  // @override
+  // void initState() {
+  //   super.initState();
 
+  //   WidgetsBinding.instance.addPostFrameCallback((_) {
+  //     context.read<ScanHistoryBloc>().add(LoadScanHistory(page: 1, limit: 5));
+
+  //     context.read<WalletBloc>().add(LoadWalletTransactions(page: 1, limit: 5));
+  //   });
+  // }
   @override
   void initState() {
     super.initState();
-    loadData();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ScanHistoryBloc>().add(LoadScanHistory(page: 1, limit: 5));
 
       context.read<WalletBloc>().add(LoadWalletTransactions(page: 1, limit: 5));
-    });
-  }
-
-  Future<void> loadData() async {
-    // Simulate API loading
-    await Future.delayed(const Duration(seconds: 3));
-
-    if (!mounted) return;
-
-    setState(() {
-      isLoading = false;
+      context.read<HomeBloc>().add(CampaignRequested(page: 1, pageSize: 10));
     });
   }
 
   Future<void> _onRefresh() async {
     if (!mounted) return;
 
-    setState(() {
-      isLoading = true;
-    });
-
     final scanHistoryBloc = context.read<ScanHistoryBloc>();
     final walletBloc = context.read<WalletBloc>();
+    final homeBloc = context.read<HomeBloc>();
 
     scanHistoryBloc.add(LoadScanHistory(page: 1, limit: 5));
 
     walletBloc.add(LoadWalletTransactions(page: 1, limit: 5));
+
+    homeBloc.add(CampaignRequested(page: 1, pageSize: 10));
 
     try {
       await Future.wait([
@@ -74,16 +78,13 @@ class _HomeScreenState extends State<HomeScreen> {
         walletBloc.stream.firstWhere(
           (state) => state is WalletSuccess || state is WalletFailure,
         ),
+        homeBloc.stream.firstWhere(
+          (state) => state is CampaignSuccess || state is CampaignFailure,
+        ),
       ]);
     } catch (e) {
       debugPrint('Home refresh error: $e');
     }
-
-    if (!mounted) return;
-
-    setState(() {
-      isLoading = false;
-    });
   }
 
   @override
@@ -98,7 +99,10 @@ class _HomeScreenState extends State<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 16.w,
+                    vertical: 16.h,
+                  ),
                   child: Text(
                     'Welcome 👋',
                     style: TextStyle(
@@ -108,8 +112,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
 
-                SizedBox(height: 8.h),
-
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16.w),
                   child: Text(
@@ -118,65 +120,196 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
 
-                SizedBox(height: 24.h),
+                BlocConsumer<CampaignEnrollBloc, CampaignEnrollState>(
+                  listener: (context, enrollState) {
+                    if (enrollState is CampaignEnrollSuccess) {
+                      setState(() {
+                        _subscribedCampaignIds.add(enrollState.campaignId);
+                      });
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(enrollState.message),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
 
-                if (isLoading)
-                  _buildBannerShimmer()
-                else
-                  SizedBox(
-                    height: 160.h,
-                    child: ListView.builder(
-                      padding: EdgeInsets.symmetric(horizontal: 16.w),
-                      scrollDirection: Axis.horizontal,
-                      itemCount: HomeBannerDummyData.banners.length,
-                      itemBuilder: (context, index) {
-                        final banner = HomeBannerDummyData.banners[index];
+                      context.read<HomeBloc>().add(
+                        CampaignRequested(page: 1, pageSize: 10),
+                      );
+                    }
 
-                        return HomeBanner(
-                          title: banner.title,
-                          description: banner.description,
-                          icon: banner.icon,
-                        );
+                    if (enrollState is CampaignEnrollFailure) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(enrollState.message),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  },
+                  builder: (context, enrollState) {
+                    final loadingCampaignId =
+                        enrollState is CampaignEnrollLoading
+                            ? enrollState.campaignId
+                            : null;
+
+                    return BlocBuilder<HomeBloc, HomeState>(
+                      builder: (context, homeState) {
+                        if (homeState is CampaignLoading ||
+                            homeState is HomeInitial) {
+                          return _buildBannerShimmer();
+                        }
+
+                        if (homeState is CampaignFailure) {
+                          return Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 16.w),
+                            child: Text(
+                              homeState.message,
+                              style: TextStyle(
+                                fontSize: 13.sp,
+                                color: Colors.red,
+                              ),
+                            ),
+                          );
+                        }
+
+                        // if (homeState is CampaignSuccess) {
+                        //   final campaigns = homeState.response.data.items;
+
+                        //   if (campaigns.isEmpty) {
+                        //     return const SizedBox.shrink();
+                        //   }
+
+                        //   return SizedBox(
+                        //     height: 160.h,
+                        //     child: ListView.builder(
+                        //       padding: EdgeInsets.symmetric(
+                        //         horizontal: 16.w,
+                        //       ),
+                        //       scrollDirection: Axis.horizontal,
+                        //       itemCount: campaigns.length,
+                        //       itemBuilder: (context, index) {
+                        //         final campaign = campaigns[index];
+                        //         final isSubscribed =
+                        //             campaign.isSubscribed ||
+                        //             _subscribedCampaignIds.contains(
+                        //               campaign.id,
+                        //             );
+
+                        //         return CampaignCard(
+                        //           title: campaign.name,
+                        //           description: campaign.description,
+                        //           icon: Icons.card_giftcard,
+                        //           isLoading:
+                        //               loadingCampaignId == campaign.id,
+                        //           showSubscribeButton: !isSubscribed,
+                        //           onSubscribeTap: () {
+                        //             final profileState =
+                        //                 context.read<ProfileBloc>().state;
+                        //             if (profileState is ProfileLoaded) {
+                        //               final profile = profileState.profile;
+                        //               context.read<CampaignEnrollBloc>().add(
+                        //                 EnrollCampaignRequested(
+                        //                   campaignId: campaign.id,
+                        //                   partnerId: profile.id,
+                        //                   partnerType: profile.type,
+                        //                   regionId: profile.regionId ?? '',
+                        //                 ),
+                        //               );
+                        //             } else {
+                        //               ScaffoldMessenger.of(context).showSnackBar(
+                        //                 const SnackBar(
+                        //                   content: Text(
+                        //                     'Profile loading, please try again',
+                        //                   ),
+                        //                 ),
+                        //               );
+                        //             }
+                        //           },
+                        //         );
+                        //       },
+                        //     ),
+                        //   );
+                        // }
+
+                        if (homeState is CampaignSuccess) {
+                          final allCampaigns = homeState.response.data.items;
+
+                          // Only show campaigns that are NOT subscribed.
+                          final campaigns =
+                              allCampaigns.where((campaign) {
+                                final isSubscribed =
+                                    campaign.isSubscribed ||
+                                    _subscribedCampaignIds.contains(
+                                      campaign.id,
+                                    );
+
+                                return !isSubscribed;
+                              }).toList();
+
+                          // No campaigns available to subscribe.
+                          if (campaigns.isEmpty) {
+                            return const SizedBox.shrink();
+                          }
+
+                          return SizedBox(
+                            height: 160.h,
+                            child: ListView.builder(
+                              padding: EdgeInsets.symmetric(horizontal: 16.w),
+                              scrollDirection: Axis.horizontal,
+                              itemCount: campaigns.length,
+                              itemBuilder: (context, index) {
+                                final campaign = campaigns[index];
+
+                                return CampaignCard(
+                                  title: campaign.name,
+                                  description: campaign.description,
+                                  icon: Icons.card_giftcard,
+                                  isLoading: loadingCampaignId == campaign.id,
+
+                                  // Since we already filtered subscribed campaigns,
+                                  // every displayed card gets Subscribe Now.
+                                  showSubscribeButton: true,
+
+                                  onSubscribeTap: () {
+                                    final profileState =
+                                        context.read<ProfileBloc>().state;
+
+                                    if (profileState is ProfileLoaded) {
+                                      final profile = profileState.profile;
+
+                                      context.read<CampaignEnrollBloc>().add(
+                                        EnrollCampaignRequested(
+                                          campaignId: campaign.id,
+                                          partnerId: profile.id,
+                                          partnerType: profile.type,
+                                          regionId: profile.regionId ?? '',
+                                        ),
+                                      );
+                                    } else {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            'Profile loading, please try again',
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  },
+                                );
+                              },
+                            ),
+                          );
+                        }
+
+                        return const SizedBox.shrink();
                       },
-                    ),
-                  ),
+                    );
+                  },
+                ),
 
-                //SizedBox(height: 24.h),
-                // Padding(
-                //   padding: EdgeInsets.symmetric(horizontal: 16.w),
-                //   child: Text(
-                //     'Product Rewards',
-                //     style: TextStyle(
-                //       fontSize: 19.sp,
-                //       fontWeight: FontWeight.bold,
-                //       color: AppColors.textPrimary,
-                //     ),
-                //   ),
-                // ),
-                // SizedBox(height: 12.h),
-                // if (isLoading)
-                //   _buildProductRewardShimmer()
-                // else
-                //   ListView.builder(
-                //     shrinkWrap: true,
-                //     physics: const NeverScrollableScrollPhysics(),
-                //     itemCount: ProductRewardDummyData.rewards.length,
-                //     itemBuilder: (context, index) {
-                //       final reward = ProductRewardDummyData.rewards[index];
-
-                //       return Padding(
-                //         padding: EdgeInsets.only(bottom: 12.h),
-                //         child: ProductReward(
-                //           productName: reward.productName,
-                //           rewardPoints: reward.rewardPoints,
-                //           description: reward.description,
-                //           onTap: () {
-                //             // Open product/reward details
-                //           },
-                //         ),
-                //       );
-                //     },
-                //   ),
                 SizedBox(height: 24.h),
 
                 Padding(
@@ -588,122 +721,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     const Spacer(),
 
                     Container(height: 12.h, width: 90.w, color: Colors.white),
-                  ],
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildProductRewardShimmer() {
-    return Shimmer.fromColors(
-      baseColor: Colors.grey.shade300,
-      highlightColor: Colors.grey.shade100,
-      child: ListView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        padding: EdgeInsets.symmetric(horizontal: 16.w),
-        itemCount: 3,
-        itemBuilder: (context, index) {
-          return Container(
-            width: double.infinity,
-            height: 175.h,
-            margin: EdgeInsets.only(bottom: 12.h),
-            padding: EdgeInsets.all(16.w),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16.r),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header
-                Row(
-                  children: [
-                    Container(
-                      width: 42.w,
-                      height: 42.w,
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-
-                    SizedBox(width: 12.w),
-
-                    Container(
-                      height: 16.h,
-                      width: 140.w,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(5.r),
-                      ),
-                    ),
-                  ],
-                ),
-
-                SizedBox(height: 16.h),
-
-                // Product name
-                Container(
-                  height: 14.h,
-                  width: 160.w,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(5.r),
-                  ),
-                ),
-
-                SizedBox(height: 8.h),
-
-                // Description
-                Container(
-                  height: 10.h,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(5.r),
-                  ),
-                ),
-
-                SizedBox(height: 6.h),
-
-                Container(
-                  height: 10.h,
-                  width: 200.w,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(5.r),
-                  ),
-                ),
-
-                const Spacer(),
-
-                // Reward + button
-                Row(
-                  children: [
-                    Container(
-                      width: 110.w,
-                      height: 30.h,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(8.r),
-                      ),
-                    ),
-
-                    const Spacer(),
-
-                    Container(
-                      width: 90.w,
-                      height: 30.h,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(8.r),
-                      ),
-                    ),
                   ],
                 ),
               ],

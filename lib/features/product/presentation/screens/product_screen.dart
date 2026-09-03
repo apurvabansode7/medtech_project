@@ -51,92 +51,94 @@ class _ProductScreenState extends State<ProductScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: BlocBuilder<ShowcaseProductBloc, ShowcaseProductState>(
-        builder: (context, state) {
-          // Initial loading
-          if (state is ShowcaseProductLoading) {
-            return GridView.builder(
-              padding: EdgeInsets.all(16.w),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 12.w,
-                mainAxisSpacing: 12.h,
-                childAspectRatio: 0.62,
-              ),
-              itemCount: 6,
-              itemBuilder: (_, index) {
-                return const ShowcaseProductShimmer();
-              },
-            );
-          }
-
-          // Error
-          if (state is ShowcaseProductFailure) {
-            return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.error_outline, size: 45, color: Colors.grey),
-                  SizedBox(height: 12.h),
-                  Text(state.message, textAlign: TextAlign.center),
-                  SizedBox(height: 12.h),
-                  ElevatedButton(
-                    onPressed: () {
-                      context.read<ShowcaseProductBloc>().add(
-                        const LoadShowcaseProducts(),
-                      );
-                    },
-                    child: const Text('Retry'),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          // Loaded
-          if (state is ShowcaseProductLoaded) {
-            if (state.products.isEmpty) {
-              return RefreshIndicator(
-                onRefresh: _onRefresh,
-                child: ListView(
-                  children: [
-                    SizedBox(height: 250.h),
-                    const Center(child: Text('No products found')),
-                  ],
-                ),
-              );
-            }
-
-            return RefreshIndicator(
-              onRefresh: _onRefresh,
-              child: GridView.builder(
-                controller: _scrollController,
-                physics: const AlwaysScrollableScrollPhysics(),
+      body: SafeArea(
+        child: BlocBuilder<ShowcaseProductBloc, ShowcaseProductState>(
+          builder: (context, state) {
+            // Initial loading
+            if (state is ShowcaseProductLoading) {
+              return GridView.builder(
                 padding: EdgeInsets.all(16.w),
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
                   crossAxisSpacing: 12.w,
                   mainAxisSpacing: 12.h,
-                  childAspectRatio: 0.68,
-                  mainAxisExtent: 265.h,
+                  childAspectRatio: 0.62,
                 ),
-                itemCount:
-                    state.products.length + (state.isLoadingMore ? 1 : 0),
-                itemBuilder: (context, index) {
-                  if (index >= state.products.length) {
-                    return const ShowcaseProductShimmer();
-                  }
-
-                  final product = state.products[index];
-
-                  return ShowcaseProductCard(product: product);
+                itemCount: 6,
+                itemBuilder: (_, index) {
+                  return const ShowcaseProductShimmer();
                 },
-              ),
-            );
-          }
-
-          return const SizedBox();
-        },
+              );
+            }
+        
+            // Error
+            if (state is ShowcaseProductFailure) {
+              return Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.error_outline, size: 45, color: Colors.grey),
+                    SizedBox(height: 12.h),
+                    Text(state.message, textAlign: TextAlign.center),
+                    SizedBox(height: 12.h),
+                    ElevatedButton(
+                      onPressed: () {
+                        context.read<ShowcaseProductBloc>().add(
+                          const LoadShowcaseProducts(),
+                        );
+                      },
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              );
+            }
+        
+            // Loaded
+            if (state is ShowcaseProductLoaded) {
+              if (state.products.isEmpty) {
+                return RefreshIndicator(
+                  onRefresh: _onRefresh,
+                  child: ListView(
+                    children: [
+                      SizedBox(height: 250.h),
+                      const Center(child: Text('No products found')),
+                    ],
+                  ),
+                );
+              }
+        
+              return RefreshIndicator(
+                onRefresh: _onRefresh,
+                child: GridView.builder(
+                  controller: _scrollController,
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: EdgeInsets.all(16.w),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 12.w,
+                    mainAxisSpacing: 12.h,
+                    childAspectRatio: 0.68,
+                    mainAxisExtent: 265.h,
+                  ),
+                  itemCount:
+                      state.products.length + (state.isLoadingMore ? 1 : 0),
+                  itemBuilder: (context, index) {
+                    if (index >= state.products.length) {
+                      return const ShowcaseProductShimmer();
+                    }
+        
+                    final product = state.products[index];
+        
+                    return ShowcaseProductCard(product: product);
+                  },
+                ),
+              );
+            }
+        
+            return const SizedBox();
+          },
+        ),
       ),
     );
   }

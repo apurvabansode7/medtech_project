@@ -12,10 +12,9 @@ class LoginSubmited extends AuthEvent {
 class LogoutRequested extends AuthEvent {
   const LogoutRequested();
 }
+
 class LoginOtpRequested extends AuthEvent {
   final String email;
 
-  const LoginOtpRequested({
-    required this.email,
-  });
+  const LoginOtpRequested({required this.email});
 }

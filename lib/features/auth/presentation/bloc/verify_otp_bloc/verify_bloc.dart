@@ -27,10 +27,13 @@ class VerifyOtpBloc
     emit(const VerifyOtpLoading());
 
     try {
-final result = await authRepository.verifyOtp(
-  email: event.email,
-  otp: event.otp,
-);
+      final result = await authRepository.verifyOtp(
+        email: event.email,
+        otp: event.otp,
+        deviceId: event.deviceId,
+        appVersion: event.appVersion,
+        platform: event.platform,
+      );
 
 emit(
   VerifyOtpSuccess(
@@ -58,6 +61,8 @@ emit(
     try {
       await authRepository.resendOtp(
         email: event.email,
+        deviceId: event.deviceId,
+        appVersion: event.appVersion,
       );
 
       emit(

@@ -16,14 +16,17 @@ class AuthApi {
     );
   }
 
-  // NEW: Login with OTP - only email required
   Future<Response> loginWithOtp({
     required String email,
+    // required String deviceId,
+    // required String appVersion,
   }) async {
     return await apiService.post(
       '/api/v1/partners-auth/login-otp',
       data: {
         'email': email,
+        // 'deviceId': deviceId,
+        // 'appVersion': appVersion,
       },
     );
   }
@@ -38,9 +41,11 @@ class AuthApi {
   Future<Response> verifyOtp({
     required String email,
     required String otp,
-     // required String accessToken,
-
+    required String deviceId,
+    required String appVersion,
+    required String platform,
   }) async {
+    print('VERIFY OTP REQUEST: email=$email, otp=$otp, deviceId=$deviceId, appVersion=$appVersion ,  platform=$platform');
     return await apiService.post(
       '/api/v1/otp/verify',
       data: {
@@ -48,17 +53,26 @@ class AuthApi {
         'email': email,
         'purpose': 'LOGIN',
         'otp': otp,
+        'deviceId': deviceId,
+        'appVersion': appVersion,
+        'platform': platform,
       },
     );
   }
 
-  Future<Response> resendOtp({required String email}) async {
+  Future<Response> resendOtp({
+    required String email,
+    required String deviceId,
+    required String appVersion,
+  }) async {
     return await apiService.post(
       '/api/v1/otp/resend',
       data: {
         'userType': 'CHEMIST',
         'email': email,
         'purpose': 'LOGIN',
+        'deviceId': deviceId,
+        'appVersion': appVersion,
       },
     );
   }

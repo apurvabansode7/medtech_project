@@ -67,75 +67,80 @@ class _WalletScreenState extends State<WalletScreen> {
       backgroundColor: AppColors.white,
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: AppColors.white,
-        centerTitle: true,
+        backgroundColor: AppColors.primary,
+    
+         iconTheme: const IconThemeData(
+    color: AppColors.white,
+  ),
         surfaceTintColor: AppColors.transparent,
         title: Text(
           'Wallet',
           style: TextStyle(
             fontSize: 20.sp,
             fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
+            color: AppColors.white,
           ),
         ),
       ),
-      body: BlocBuilder<WalletBloc, WalletState>(
-        builder: (context, state) {
-          if (state is WalletLoading) {
-            return _buildShimmerList();
-          }
-
-          if (state is WalletFailure) {
-            return _buildErrorState(state.message);
-          }
-
-          if (state is WalletSuccess) {
-            if (state.transactions.isEmpty) {
+      body: SafeArea(
+        child: BlocBuilder<WalletBloc, WalletState>(
+          builder: (context, state) {
+            if (state is WalletLoading) {
+              return _buildShimmerList();
+            }
+        
+            if (state is WalletFailure) {
+              return _buildErrorState(state.message);
+            }
+        
+            if (state is WalletSuccess) {
+              if (state.transactions.isEmpty) {
+                return RefreshIndicator(
+                  onRefresh: _onRefresh,
+                  child: ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    children: [SizedBox(height: 250.h), _buildEmptyState()],
+                  ),
+                );
+              }
+        
               return RefreshIndicator(
                 onRefresh: _onRefresh,
-                child: ListView(
+                color: AppColors.primary,
+                child: ListView.builder(
+                  controller: _scrollController,
                   physics: const AlwaysScrollableScrollPhysics(),
-                  children: [SizedBox(height: 250.h), _buildEmptyState()],
+                  padding: EdgeInsets.all(16.w),
+                  itemCount:
+                      state.transactions.length + (state.isLoadingMore ? 1 : 0),
+                  itemBuilder: (context, index) {
+                    // Bottom pagination loader
+                    if (index == state.transactions.length) {
+                      return Padding(
+                        padding: EdgeInsets.symmetric(vertical: 20.h),
+                        child: Center(
+                          child: SizedBox(
+                            width: 24.w,
+                            height: 24.w,
+                            child: const CircularProgressIndicator(
+                              strokeWidth: 2.5,
+                            ),
+                          ),
+                        ),
+                      );
+                    }
+        
+                    final transaction = state.transactions[index];
+        
+                    return WalletTransactionCard(transaction: transaction);
+                  },
                 ),
               );
             }
-
-            return RefreshIndicator(
-              onRefresh: _onRefresh,
-              color: AppColors.primary,
-              child: ListView.builder(
-                controller: _scrollController,
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: EdgeInsets.all(16.w),
-                itemCount:
-                    state.transactions.length + (state.isLoadingMore ? 1 : 0),
-                itemBuilder: (context, index) {
-                  // Bottom pagination loader
-                  if (index == state.transactions.length) {
-                    return Padding(
-                      padding: EdgeInsets.symmetric(vertical: 20.h),
-                      child: Center(
-                        child: SizedBox(
-                          width: 24.w,
-                          height: 24.w,
-                          child: const CircularProgressIndicator(
-                            strokeWidth: 2.5,
-                          ),
-                        ),
-                      ),
-                    );
-                  }
-
-                  final transaction = state.transactions[index];
-
-                  return WalletTransactionCard(transaction: transaction);
-                },
-              ),
-            );
-          }
-
-          return const SizedBox.shrink();
-        },
+        
+            return const SizedBox.shrink();
+          },
+        ),
       ),
     );
   }

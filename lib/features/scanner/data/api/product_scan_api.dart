@@ -29,6 +29,7 @@ class ProductScanApi {
 
       return response;
     } on DioException catch (e) {
+      // print('Scan API error: ${e.message}');
       rethrow;
     }
   }

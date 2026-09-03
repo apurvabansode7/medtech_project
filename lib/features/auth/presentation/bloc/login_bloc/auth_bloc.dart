@@ -38,16 +38,19 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(LoginFailure(e.toString().replaceFirst('Exception: ', '')));
     }
   }
-Future<void> _onLoginOtpRequested(
-  LoginOtpRequested event,
-  Emitter<AuthState> emit,
-) async {
-  emit(const AuthLoading());
 
-  try {
-    await authRepository.loginOtp(
-      email: event.email,
-    );
+  Future<void> _onLoginOtpRequested(
+    LoginOtpRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(const AuthLoading());
+
+    try {
+      await authRepository.loginOtp(
+        email: event.email,
+        // deviceId: event.deviceId,
+        // appVersion: event.appVersion,
+      );
 
     emit(
       const LoginOtpSent(),

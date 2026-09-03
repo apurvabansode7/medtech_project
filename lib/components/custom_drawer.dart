@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:medtech_project/components/cached_network_image.dart';
 import 'package:medtech_project/constant/app_colors.dart';
+import 'package:medtech_project/core/utils/device_info_service.dart';
 
 class CustomDrawer extends StatelessWidget {
   const CustomDrawer({
@@ -12,9 +13,11 @@ class CustomDrawer extends StatelessWidget {
     required this.onMessagesTap,
     required this.onProfileTap,
     required this.onSettingsTap,
-
+    required this.onsubscribeTap,
     required this.onInterestedTap,
     required this.onWalletTap,
+    required this.onRewardTap,
+    required this.onClaimRewardTap,
     required this.onLogoutTap,
   });
 
@@ -25,13 +28,14 @@ class CustomDrawer extends StatelessWidget {
   final VoidCallback onMessagesTap;
   final VoidCallback onProfileTap;
   final VoidCallback onSettingsTap;
-
+  final VoidCallback onsubscribeTap;
   final VoidCallback onInterestedTap;
   final VoidCallback onWalletTap;
+  final VoidCallback onRewardTap;
+  final VoidCallback onClaimRewardTap;
   final VoidCallback onLogoutTap;
 
-
- String _getInitial(String name) {
+  String _getInitial(String name) {
     final trimmedName = name.trim();
 
     if (trimmedName.isEmpty) {
@@ -40,9 +44,8 @@ class CustomDrawer extends StatelessWidget {
 
     return trimmedName.substring(0, 1).toUpperCase();
   }
-  @override
- 
 
+  @override
   Widget build(BuildContext context) {
     return Drawer(
       backgroundColor: AppColors.white,
@@ -67,7 +70,7 @@ class CustomDrawer extends StatelessWidget {
                       backgroundColor: AppColors.white,
                       initial: userName,
                       placeholder: Container(
-                       color: AppColors.white,
+                        color: AppColors.white,
                         alignment: Alignment.center,
                         child: Text(
                           _getInitial(userName),
@@ -79,7 +82,7 @@ class CustomDrawer extends StatelessWidget {
                         ),
                       ),
                       errorWidget: Container(
-                       color: AppColors.white,
+                        color: AppColors.white,
                         alignment: Alignment.center,
                         child: Text(
                           _getInitial(userName),
@@ -127,12 +130,12 @@ class CustomDrawer extends StatelessWidget {
 
           _DrawerItem(
             icon: Icons.inventory_2_outlined,
-            title: 'Products',
+            title: ' Showcase Products',
             onTap: onMessagesTap,
           ),
           _DrawerItem(
             icon: Icons.favorite_border,
-            title: 'Interested',
+            title: 'Interested Products',
             onTap: onInterestedTap,
           ),
 
@@ -141,13 +144,30 @@ class CustomDrawer extends StatelessWidget {
             title: 'Walllet',
             onTap: onWalletTap,
           ),
+          _DrawerItem(icon: Icons.gif_box, title: 'Rewards Products', onTap: onRewardTap),
+          _DrawerItem(
+            icon: Icons.subscriptions_outlined,
+            title: 'subscribe campaign',
+            onTap: onsubscribeTap,
+          ),
+          _DrawerItem(icon: Icons.wallet_giftcard, title: 'Claim Reward', onTap: onClaimRewardTap),
           _DrawerItem(icon: Icons.logout, title: 'log out', onTap: onLogoutTap),
 
           const Spacer(),
 
           const Divider(),
 
-          _DrawerItem(icon: Icons.info_outline, title: 'version', onTap: () {}),
+          FutureBuilder<String>(
+            future: DeviceInfoService.getAppVersion(),
+            builder: (context, snapshot) {
+              final version = snapshot.data ?? '1.0.0';
+              return _DrawerItem(
+                icon: Icons.info_outline,
+                title: 'Version $version',
+                onTap: () {},
+              );
+            },
+          ),
 
           SizedBox(height: 12.h),
         ],

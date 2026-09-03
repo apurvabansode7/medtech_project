@@ -32,7 +32,6 @@
 
 //   bool isPasswordVisible = false;
 //   String password = '';
-  
 
 //   @override
 //   void dispose() {
@@ -259,7 +258,7 @@ import 'package:medtech_project/features/auth/presentation/bloc/login_bloc/auth_
 import 'package:medtech_project/features/auth/presentation/bloc/login_bloc/auth_event.dart';
 import 'package:medtech_project/features/auth/presentation/bloc/login_bloc/auth_state.dart';
 import 'package:medtech_project/features/auth/presentation/screens/verify_otp_screen.dart';
-import 'package:medtech_project/features/home/screens/main_home_screen.dart';
+import 'package:medtech_project/features/home/presentation/screens/main_home_screen.dart';
 import 'package:medtech_project/utils/app_snack_bar.dart';
 import 'package:medtech_project/utils/validators.dart';
 
@@ -275,6 +274,13 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
 
   final TextEditingController _emailController = TextEditingController();
+ 
+  @override
+  void initState() {
+    super.initState();
+  }
+
+
 
   @override
   void dispose() {
@@ -298,13 +304,14 @@ class _LoginScreenState extends State<LoginScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => BlocProvider.value(
-                value: context.read<AuthBloc>(),
-                child: VerifyOtpScreen(
-                  email: _emailController.text.trim(),
-                 
-                ),
-              ),
+              builder:
+                  (_) => BlocProvider.value(
+                    value: context.read<AuthBloc>(),
+                    child: VerifyOtpScreen(
+                      email: _emailController.text.trim(),
+                    
+                    ),
+                  ),
             ),
           );
 
@@ -317,9 +324,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(
-              builder: (_) => const MainHomeScreen(),
-            ),
+            MaterialPageRoute(builder: (_) => const MainHomeScreen()),
           );
         }
       },
@@ -331,14 +336,9 @@ class _LoginScreenState extends State<LoginScreen> {
           body: SafeArea(
             child: Center(
               child: SingleChildScrollView(
-                padding: EdgeInsets.symmetric(
-                  horizontal: 30.w,
-                  vertical: 24.h,
-                ),
+                padding: EdgeInsets.symmetric(horizontal: 30.w, vertical: 24.h),
                 child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxWidth: 450.w,
-                  ),
+                  constraints: BoxConstraints(maxWidth: 450.w),
                   child: Form(
                     key: _formKey,
                     child: Column(
@@ -410,17 +410,23 @@ class _LoginScreenState extends State<LoginScreen> {
                         AppButton(
                           isLoading: isLoading,
                           title: 'Send OTP',
-                          onPressed: isLoading
-                              ? null
-                              : () {
-                                  if (_formKey.currentState!.validate()) {
-                                    context.read<AuthBloc>().add(
-                                      LoginOtpRequested(
-                                        email: _emailController.text.trim(),
-                                      ),
-                                    );
-                                  }
-                                },
+                          onPressed:
+                              isLoading
+                                  ? null
+                                  : () async {
+                                    if (_formKey.currentState!.validate()) {
+                                  
+
+                                      if (!context.mounted) return;
+
+                                      context.read<AuthBloc>().add(
+                                        LoginOtpRequested(
+                                          email: _emailController.text.trim(),
+                                         
+                                        ),
+                                      );
+                                    }
+                                  },
                         ),
 
                         SizedBox(height: 24.h),

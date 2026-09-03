@@ -37,6 +37,7 @@ class ProductScanBloc
         message: data['message'] ?? 'Product scan successful',
 
         isAwarded: data['isAwarded'] == true,
+        productName: data['productName']?.toString(),
 
         rewardPoints:
             data['pointsAdded'] is num

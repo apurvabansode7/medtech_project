@@ -2,17 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:medtech_project/constant/app_colors.dart';
 
-class HomeBanner extends StatelessWidget {
-  const HomeBanner({
+class CampaignCard extends StatelessWidget {
+  const CampaignCard({
     super.key,
     required this.title,
     required this.description,
     required this.icon,
+    this.isLoading = false,
+    required this.onSubscribeTap,
+    this.showSubscribeButton = false,
+    this.pointsAvailable,
   });
 
   final String title;
   final String description;
   final IconData icon;
+  final VoidCallback onSubscribeTap;
+  final bool isLoading;
+
+  final bool showSubscribeButton;
+  final int? pointsAvailable;
 
   @override
   Widget build(BuildContext context) {
@@ -20,16 +29,13 @@ class HomeBanner extends StatelessWidget {
       width: 300.w,
       height: 150.h,
       margin: EdgeInsets.only(right: 12.w),
-    //  clipBehavior: Clip.antiAlias,
+      //  clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20.r),
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            AppColors.textSecondary,
-            AppColors.primary,
-          ],
+          colors: [AppColors.textSecondary, AppColors.primary],
         ),
         boxShadow: [
           BoxShadow(
@@ -41,13 +47,8 @@ class HomeBanner extends StatelessWidget {
       ),
       child: Stack(
         children: [
-       
-
           Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: 18.w,
-              vertical: 16.h,
-            ),
+            padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 16.h),
             child: Row(
               children: [
                 // Left Content
@@ -73,9 +74,7 @@ class HomeBanner extends StatelessWidget {
                           Text(
                             'SPECIAL OFFER',
                             style: TextStyle(
-                              color: AppColors.white.withValues(
-                                alpha: 0.75,
-                              ),
+                              color: AppColors.white.withValues(alpha: 0.75),
                               fontSize: 9.sp,
                               fontWeight: FontWeight.w700,
                               letterSpacing: 0.8,
@@ -106,55 +105,77 @@ class HomeBanner extends StatelessWidget {
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          color: AppColors.white.withValues(
-                            alpha: 0.78,
-                          ),
+                          color: AppColors.white.withValues(alpha: 0.78),
                           fontSize: 11.sp,
                           height: 1.3,
                         ),
                       ),
+                      if (pointsAvailable != null) ...[
+                        SizedBox(height: 6.h),
+
+                        Text(
+                          'Points Available: $pointsAvailable',
+                          style: TextStyle(
+                            color: AppColors.white,
+                            fontSize: 11.sp,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
 
                       SizedBox(height: 10.h),
 
-                      // CTA
-                      Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: () {},
-                          borderRadius: BorderRadius.circular(20.r),
-                          child: Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 13.w,
-                              vertical: 7.h,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.white,
-                              borderRadius: BorderRadius.circular(20.r),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  'Explore Now',
-                                  style: TextStyle(
-                                    color: AppColors.primary,
-                                    fontSize: 10.sp,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
+                      if (showSubscribeButton) ...[
+                        SizedBox(height: 10.h),
 
-                                SizedBox(width: 5.w),
-
-                                Icon(
-                                  Icons.arrow_forward_rounded,
-                                  size: 13.sp,
-                                  color: AppColors.primary,
-                                ),
-                              ],
+                        Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: isLoading ? null : onSubscribeTap,
+                            borderRadius: BorderRadius.circular(20.r),
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 13.w,
+                                vertical: 7.h,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.white,
+                                borderRadius: BorderRadius.circular(20.r),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  if (isLoading)
+                                    SizedBox(
+                                      width: 13.w,
+                                      height: 13.w,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: AppColors.primary,
+                                      ),
+                                    )
+                                  else ...[
+                                    Text(
+                                      'Subscribe Now',
+                                      style: TextStyle(
+                                        color: AppColors.primary,
+                                        fontSize: 10.sp,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                    SizedBox(width: 5.w),
+                                    Icon(
+                                      Icons.arrow_forward_rounded,
+                                      size: 13.sp,
+                                      color: AppColors.primary,
+                                    ),
+                                  ],
+                                ],
+                              ),
                             ),
                           ),
                         ),
-                      ),
+                      ],
                     ],
                   ),
                 ),
@@ -176,11 +197,7 @@ class HomeBanner extends StatelessWidget {
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
-                      Icon(
-                        icon,
-                        size: 38.sp,
-                        color: AppColors.white,
-                      ),
+                      Icon(icon, size: 38.sp, color: AppColors.white),
 
                       // Small badge
                       Positioned(

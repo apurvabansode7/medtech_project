@@ -14,7 +14,7 @@ class CustomAppBar extends StatelessWidget
   @override
   Widget build(BuildContext context) {
     return AppBar(
-    //  backgroundColor: AppColors.white,
+     backgroundColor: AppColors.primary,
       elevation: 0,
       centerTitle: true,
       surfaceTintColor: AppColors.transparent,
@@ -28,7 +28,7 @@ class CustomAppBar extends StatelessWidget
             icon: Icon(
               Icons.menu,
               size: 24.sp,
-              color: AppColors.textPrimary,
+             color: AppColors.white,
             ),
           );
         },

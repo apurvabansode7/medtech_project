@@ -140,8 +140,8 @@ class EditProfileScreen extends StatefulWidget {
 // ============================================================
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
-  late List<BusinessControllers> businessControllers = [];
-  //late final BusinessControllers businessController;
+  // late List<BusinessControllers> businessControllers = [];
+  late final BusinessControllers businessController;
   final ImagePicker _imagePicker = ImagePicker();
 
   XFile? selectedProfileImage;
@@ -168,14 +168,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     gstNumberController = TextEditingController(text: profile.gstNumber);
 
     // Only ONE business
-    // businessController = BusinessControllers(
-    //   profile.business.isNotEmpty ? profile.business.first : null,
-    // );
+    businessController = BusinessControllers(
+      profile.business.isNotEmpty ? profile.business.first : null,
+    );
     //multiple business
-    businessControllers =
-        profile.business
-            .map((business) => BusinessControllers(business))
-            .toList();
+    // businessControllers =
+    //     profile.business
+    //         .map((business) => BusinessControllers(business))
+    //         .toList();
   }
 
   // ============================================================
@@ -188,10 +188,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     businessNameController.dispose();
     gstNumberController.dispose();
 
-    // businessController.dispose();
-    for (final controller in businessControllers) {
-      controller.dispose();
-    }
+    businessController.dispose();
+    // for (final controller in businessControllers) {
+    //   controller.dispose();
+    // }
 
     super.dispose();
   }
@@ -355,116 +355,116 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   // ============================================================
   // UPDATE PROFILE
   // ============================================================
-  // void _updateProfile() {
-  //   final BusinessControllers controller = businessController;
+  void _updateProfile() {
+    final BusinessControllers controller = businessController;
 
-  //   final Map<String, dynamic> businessData = {
-  //     // Existing business -> send ID
-  //     // New business -> don't send ID
-  //     if (controller.businessId != null && controller.businessId!.isNotEmpty)
-  //       'businessId': controller.businessId,
+    final Map<String, dynamic> businessData = {
+      // Existing business -> send ID
+      // New business -> don't send ID
+      if (controller.businessId != null && controller.businessId!.isNotEmpty)
+        'businessId': controller.businessId,
 
-  //     'outletName': controller.outletNameController.text.trim(),
+      'outletName': controller.outletNameController.text.trim(),
 
-  //     'userName': controller.usernameController.text.trim(),
+      'userName': controller.usernameController.text.trim(),
 
-  //     'panNumber': controller.panController.text.trim(),
+      'panNumber': controller.panController.text.trim(),
 
-  //     'drugLicenseNumber': controller.drugLicenseController.text.trim(),
+      'drugLicenseNumber': controller.drugLicenseController.text.trim(),
 
-  //     'drugLicenseExpiry': controller.drugLicenseExpiryController.text.trim(),
+      'drugLicenseExpiry': controller.drugLicenseExpiryController.text.trim(),
 
-  //     'addressType': controller.addressTypeController.text.trim(),
+      'addressType': controller.addressTypeController.text.trim(),
 
-  //     'addressLine1': controller.addressLine1Controller.text.trim(),
+      'addressLine1': controller.addressLine1Controller.text.trim(),
 
-  //     'addressLine2': controller.addressLine2Controller.text.trim(),
+      'addressLine2': controller.addressLine2Controller.text.trim(),
 
-  //     'landmark': controller.landmarkController.text.trim(),
+      'landmark': controller.landmarkController.text.trim(),
 
-  //     'city': controller.cityController.text.trim(),
+      'city': controller.cityController.text.trim(),
 
-  //     'district': controller.districtController.text.trim(),
+      'district': controller.districtController.text.trim(),
 
-  //     'state': controller.stateController.text.trim(),
+      'state': controller.stateController.text.trim(),
 
-  //     'pincode': controller.pincodeController.text.trim(),
+      'pincode': controller.pincodeController.text.trim(),
 
-  //     'latitude': double.tryParse(controller.latitudeController.text.trim()),
+      'latitude': double.tryParse(controller.latitudeController.text.trim()),
 
-  //     'longitude': double.tryParse(controller.longitudeController.text.trim()),
+      'longitude': double.tryParse(controller.longitudeController.text.trim()),
 
-  //     'notes': controller.notesController.text.trim(),
+      'notes': controller.notesController.text.trim(),
 
-  //     'documents': _getExistingDocuments(controller.business),
-  //   };
+      'documents': _getExistingDocuments(controller.business),
+    };
+
+    final Map<String, dynamic> data = {
+      'businessName': businessNameController.text.trim(),
+
+      'ownerName': ownerNameController.text.trim(),
+
+      'gstNumber': gstNumberController.text.trim(),
+
+      // Only ONE business
+      'businesses': [businessData],
+    };
+
+    debugPrint('UPDATE PROFILE REQUEST');
+    debugPrint(data.toString());
+
+    context.read<ProfileBloc>().add(UpdateProfile(data: data));
+  }
+  //for the multiple business
+
+  //    void _updateProfile() {
+  //   final List<Map<String, dynamic>> businesses =
+  //       businessControllers.map((controller) {
+  //     return {
+  //       if (controller.businessId != null &&
+  //           controller.businessId!.isNotEmpty)
+  //         'businessId': controller.businessId,
+
+  //       'outletName': controller.outletNameController.text.trim(),
+  //       'userName': controller.usernameController.text.trim(),
+  //       'panNumber': controller.panController.text.trim(),
+  //       'drugLicenseNumber':
+  //           controller.drugLicenseController.text.trim(),
+  //       'drugLicenseExpiry':
+  //           controller.drugLicenseExpiryController.text.trim(),
+  //       'addressType': controller.addressTypeController.text.trim(),
+  //       'addressLine1': controller.addressLine1Controller.text.trim(),
+  //       'addressLine2': controller.addressLine2Controller.text.trim(),
+  //       'landmark': controller.landmarkController.text.trim(),
+  //       'city': controller.cityController.text.trim(),
+  //       'district': controller.districtController.text.trim(),
+  //       'state': controller.stateController.text.trim(),
+  //       'pincode': controller.pincodeController.text.trim(),
+  //       'latitude': double.tryParse(
+  //         controller.latitudeController.text.trim(),
+  //       ),
+  //       'longitude': double.tryParse(
+  //         controller.longitudeController.text.trim(),
+  //       ),
+  //       'notes': controller.notesController.text.trim(),
+  //       'documents': _getExistingDocuments(controller.business),
+  //     };
+  //   }).toList();
 
   //   final Map<String, dynamic> data = {
   //     'businessName': businessNameController.text.trim(),
-
   //     'ownerName': ownerNameController.text.trim(),
-
   //     'gstNumber': gstNumberController.text.trim(),
-
-  //     // Only ONE business
-  //     'businesses': [businessData],
+  //     'businesses': businesses,
   //   };
 
   //   debugPrint('UPDATE PROFILE REQUEST');
   //   debugPrint(data.toString());
 
-  //   context.read<ProfileBloc>().add(UpdateProfile(data: data));
+  //   context.read<ProfileBloc>().add(
+  //     UpdateProfile(data: data),
+  //   );
   // }
-   //for the multiple business
-
-   void _updateProfile() {
-  final List<Map<String, dynamic>> businesses =
-      businessControllers.map((controller) {
-    return {
-      if (controller.businessId != null &&
-          controller.businessId!.isNotEmpty)
-        'businessId': controller.businessId,
-
-      'outletName': controller.outletNameController.text.trim(),
-      'userName': controller.usernameController.text.trim(),
-      'panNumber': controller.panController.text.trim(),
-      'drugLicenseNumber':
-          controller.drugLicenseController.text.trim(),
-      'drugLicenseExpiry':
-          controller.drugLicenseExpiryController.text.trim(),
-      'addressType': controller.addressTypeController.text.trim(),
-      'addressLine1': controller.addressLine1Controller.text.trim(),
-      'addressLine2': controller.addressLine2Controller.text.trim(),
-      'landmark': controller.landmarkController.text.trim(),
-      'city': controller.cityController.text.trim(),
-      'district': controller.districtController.text.trim(),
-      'state': controller.stateController.text.trim(),
-      'pincode': controller.pincodeController.text.trim(),
-      'latitude': double.tryParse(
-        controller.latitudeController.text.trim(),
-      ),
-      'longitude': double.tryParse(
-        controller.longitudeController.text.trim(),
-      ),
-      'notes': controller.notesController.text.trim(),
-      'documents': _getExistingDocuments(controller.business),
-    };
-  }).toList();
-
-  final Map<String, dynamic> data = {
-    'businessName': businessNameController.text.trim(),
-    'ownerName': ownerNameController.text.trim(),
-    'gstNumber': gstNumberController.text.trim(),
-    'businesses': businesses,
-  };
-
-  debugPrint('UPDATE PROFILE REQUEST');
-  debugPrint(data.toString());
-
-  context.read<ProfileBloc>().add(
-    UpdateProfile(data: data),
-  );
-}
   // ============================================================
   // EXISTING DOCUMENTS
   // ============================================================
@@ -505,20 +505,19 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           backgroundColor: const Color(0xFFF7F8FA),
 
           appBar: AppBar(
-            backgroundColor: Colors.white,
-            surfaceTintColor: Colors.white,
+            backgroundColor: AppColors.primary,
+            surfaceTintColor: AppColors.transparent,
             elevation: 0,
+            iconTheme: const IconThemeData(color: AppColors.white),
 
             title: Text(
               'Edit Profile',
               style: TextStyle(
-                fontSize: 19.sp,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w500,
+                color: AppColors.white,
               ),
             ),
-
-            centerTitle: false,
           ),
 
           body: SafeArea(
@@ -556,30 +555,30 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
                   SizedBox(height: 10.h),
 
-                  // BusinessCard(
-                  //   business:
-                  //       profile.business.isNotEmpty
-                  //           ? profile.business.first
-                  //           : null,
-                  //   controllers: businessController,
-                  //   index: 0,
-                  // ),
-                  Column(
-                    children:
-                        profile.business.asMap().entries.map((entry) {
-                          final int index = entry.key;
-                          final Business business = entry.value;
-
-                          return Padding(
-                            padding: EdgeInsets.only(bottom: 16.h),
-                            child: BusinessCard(
-                              business: business,
-                              controllers: businessControllers[index],
-                              index: index,
-                            ),
-                          );
-                        }).toList(),
+                  BusinessCard(
+                    business:
+                        profile.business.isNotEmpty
+                            ? profile.business.first
+                            : null,
+                    controllers: businessController,
+                    index: 0,
                   ),
+                  // Column(
+                  //   children:
+                  //       profile.business.asMap().entries.map((entry) {
+                  //         final int index = entry.key;
+                  //         final Business business = entry.value;
+
+                  //         return Padding(
+                  //           padding: EdgeInsets.only(bottom: 16.h),
+                  //           child: BusinessCard(
+                  //             business: business,
+                  //             controllers: businessControllers[index],
+                  //             index: index,
+                  //           ),
+                  //         );
+                  //       }).toList(),
+                  // ),
                   SizedBox(height: 10.h),
 
                   // UPDATE BUTTON
@@ -706,9 +705,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     return trimmedName.substring(0, 1).toUpperCase();
   }
 
-  // ============================================================
   // PARTNER CARD
-  // ============================================================
 
   Widget _buildPartnerCard() {
     return _buildCard(
@@ -742,9 +739,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
-  // ============================================================
   // SAVE BUTTON
-  // ============================================================
 
   Widget _buildSaveButton({required bool isUpdating}) {
     return SizedBox(
@@ -758,9 +753,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
-  // ============================================================
   // SECTION TITLE
-  // ============================================================
 
   Widget _buildSectionTitle({required String title}) {
     return Text(
@@ -774,9 +767,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
-  // ============================================================
   // CARD
-  // ============================================================
 
   Widget _buildCard({required Widget child}) {
     return Container(

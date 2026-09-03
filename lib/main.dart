@@ -20,6 +20,11 @@ import 'package:medtech_project/features/auth/presentation/bloc/forgot_password_
 import 'package:medtech_project/features/auth/presentation/bloc/login_bloc/auth_bloc.dart';
 import 'package:medtech_project/features/auth/presentation/bloc/reset_password_bloc/reset_bloc.dart';
 import 'package:medtech_project/features/auth/presentation/bloc/verify_otp_bloc/verify_bloc.dart';
+import 'package:medtech_project/features/home/data/api/campaign_api.dart';
+import 'package:medtech_project/features/home/data/repositories/campaign_repository_impl.dart';
+import 'package:medtech_project/features/home/presentation/bloc/enroll_campaign_bloc.dart';
+import 'package:medtech_project/features/home/presentation/bloc/home_bloc.dart';
+import 'package:medtech_project/features/home/presentation/bloc/home_event.dart';
 import 'package:medtech_project/features/interested_product/data/api/interested_product_api.dart';
 import 'package:medtech_project/features/interested_product/data/repositories/interested_product_repository_impl.dart';
 import 'package:medtech_project/features/interested_product/presentation/bloc/interested_product_bloc.dart';
@@ -27,15 +32,22 @@ import 'package:medtech_project/features/product/data/api/showcase_product_api.d
 import 'package:medtech_project/features/product/data/repositories/showcase_product_repository_impl.dart';
 import 'package:medtech_project/features/product/presentation/bloc/product_interest_bloc.dart';
 import 'package:medtech_project/features/product/presentation/bloc/showcase_product_bloc.dart';
+import 'package:medtech_project/features/rewards/data/api/reward_api.dart';
+import 'package:medtech_project/features/rewards/data/repositories/reward_repository_impl.dart';
+import 'package:medtech_project/features/rewards/presentation/bloc/available_rewards_bloc.dart';
+import 'package:medtech_project/features/rewards/presentation/bloc/reward_bloc.dart';
+import 'package:medtech_project/features/rewards/presentation/bloc/reward_claim_bloc.dart';
 import 'package:medtech_project/features/profile/data/api/profile_api.dart';
 import 'package:medtech_project/features/profile/data/repositories/profile_repository_impl.dart';
 import 'package:medtech_project/features/profile/presentation/bloc/profile.bloc.dart';
 import 'package:medtech_project/features/profile/presentation/bloc/profile_event.dart';
+
 import 'package:medtech_project/features/scan_history/data/api/scan_history_api.dart';
 import 'package:medtech_project/features/scan_history/data/repositories/scan_history_repository_impl.dart';
 import 'package:medtech_project/features/scan_history/presentation/bloc/scan_history_bloc.dart';
 import 'package:medtech_project/features/scan_history/presentation/bloc/scan_history_event.dart';
 import 'package:medtech_project/features/scanner/data/api/product_scan_api.dart';
+import 'package:medtech_project/features/subscribe/presentation/bloc/campaign_subscribed_bloc.dart';
 import 'package:medtech_project/features/scanner/data/repositories/product_scan_repository_impl.dart';
 import 'package:medtech_project/features/scanner/presentation/bloc/product_scan_bloc.dart';
 import 'package:medtech_project/features/wallet/data/api/wallet_api.dart';
@@ -128,6 +140,9 @@ class MedTechApp extends StatelessWidget {
     final authApi = AuthApi(apiService: apiService);
 
     final authRepository = AuthRepositoryImpl(authApi: authApi);
+    final campaignApi = CampaignApi(apiService: apiService);
+
+    final campaignRepository = CampaignRepositoryImpl(api: campaignApi);
     final productScanApi = ProductScanApi(apiService: apiService);
 
     final productScanRepository = ProductScanRepositoryImpl(
@@ -146,6 +161,9 @@ class MedTechApp extends StatelessWidget {
 
     final profileRepository = ProfileRepositoryImpl(api: profileApi);
 
+    final rewardApi = RewardApi(apiService: apiService);
+    final rewardRepository = RewardRepositoryImpl(rewardApi: rewardApi);
+
     return ScreenUtilInit(
       designSize: const Size(360, 690),
       minTextAdapt: true,
@@ -158,7 +176,18 @@ class MedTechApp extends StatelessWidget {
             BlocProvider<AuthBloc>(
               create: (_) => AuthBloc(authRepository: authRepository),
             ),
-
+            BlocProvider<HomeBloc>(
+              create:
+                  (_) =>
+                      HomeBloc(repository: campaignRepository)
+                        ..add(CampaignRequested(page: 1, pageSize: 10)),
+            ),
+            BlocProvider<CampaignSubscribedBloc>(
+              create: (_) => CampaignSubscribedBloc(repository: campaignRepository),
+            ),
+            BlocProvider<CampaignEnrollBloc>(
+              create: (_) => CampaignEnrollBloc(repository: campaignRepository),
+            ),
             BlocProvider<ForgotPasswordBloc>(
               create: (_) => ForgotPasswordBloc(authRepository: authRepository),
             ),
@@ -167,6 +196,15 @@ class MedTechApp extends StatelessWidget {
               create: (_) => VerifyOtpBloc(authRepository: authRepository),
             ),
 
+            BlocProvider<RewardBloc>(
+              create: (_) => RewardBloc(repository: rewardRepository),
+            ),
+            BlocProvider<AvailableRewardsBloc>(
+              create: (_) => AvailableRewardsBloc(repository: rewardRepository),
+            ),
+            BlocProvider<RewardClaimBloc>(
+              create: (_) => RewardClaimBloc(repository: rewardRepository),
+            ),
             BlocProvider<ResetBloc>(
               create: (_) => ResetBloc(authRepository: authRepository),
             ),

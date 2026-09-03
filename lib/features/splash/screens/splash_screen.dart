@@ -1,8 +1,10 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:medtech_project/constant/app_colors.dart';
+import 'package:medtech_project/constant/app_images.dart';
 import 'package:medtech_project/features/auth/presentation/screens/login_screen.dart';
-import 'package:medtech_project/features/home/screens/main_home_screen.dart';
+import 'package:medtech_project/features/home/presentation/screens/main_home_screen.dart';
 import 'package:medtech_project/utils/app_prefrences.dart';
 
 @RoutePage()
@@ -54,14 +56,18 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      backgroundColor: AppColors.background,
+    return Scaffold(
+      backgroundColor: AppColors.white,
       body: Center(
-        child: Text(
-          'MedTech',
-          style: TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
+        child: Image.asset(
+          AppImages.medtechLogo,
+             width: 180.w,
+    height: 180.h,
+           fit: BoxFit.contain,
+          errorBuilder: (_, __, ___) => Icon(
+            Icons.medical_services,
+            color: AppColors.primary,
+            size: 60.sp,
           ),
         ),
       ),

@@ -41,8 +41,7 @@ class ProfileUpdateSuccess extends ProfileState {
     required this.profile,
   });
 
-  @override
-  List<Object?> get props => [profile];
+ 
 }
 
 class ProfileUpdateFailure extends ProfileState {
@@ -50,6 +49,4 @@ class ProfileUpdateFailure extends ProfileState {
 
   const ProfileUpdateFailure(this.message);
 
-  @override
-  List<Object?> get props => [message];
 }

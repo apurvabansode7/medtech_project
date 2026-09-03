@@ -70,31 +70,63 @@ class AuthRepositoryImpl implements AuthRepository {
     } on DioException catch (e) {
       throw Exception(e.response?.data?['message'] ?? 'Something went wrong');
     }
-  }@override
-Future<String> loginOtp({required String email}) async {
-  try {
-    final response = await authApi.loginWithOtp(
-      email: email,
-    );
-
-    debugPrint('LOGIN OTP RESPONSE: ${response.data}');
-
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      return 'OTP sent successfully';
-    }
-
-    throw Exception(
-      response.data?['message'] ?? 'Failed to send OTP',
-    );
-  } on DioException catch (e) {
-    debugPrint('LOGIN OTP ERROR: ${e.response?.data}');
-
-    throw Exception(
-      e.response?.data?['message'] ??
-          'Something went wrong',
-    );
   }
-}
+//   @override
+// Future<String> loginOtp({required String email}) async {
+//   try {
+//     final response = await authApi.loginWithOtp(
+//       email: email,
+//     );
+
+//     debugPrint('LOGIN OTP RESPONSE: ${response.data}');
+
+//     if (response.statusCode == 200 || response.statusCode == 201) {
+//       return 'OTP sent successfully';
+//     }
+
+//     throw Exception(
+//       response.data?['message'] ?? 'Failed to send OTP',
+//     );
+//   } on DioException catch (e) {
+//     debugPrint('LOGIN OTP ERROR: ${e.response?.data}');
+
+//     throw Exception(
+//       e.response?.data?['message'] ??
+//           'Something went wrong',
+//     );
+//   }
+// }
+
+  @override
+  Future<String> loginOtp({
+    required String email,
+    // required String deviceId,
+    // required String appVersion,
+  }) async {
+    try {
+      final response = await authApi.loginWithOtp(
+        email: email,
+        // deviceId: deviceId,
+        // appVersion: appVersion,
+      );
+
+      debugPrint('LOGIN OTP RESPONSE: ${response.data}');
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return 'OTP sent successfully';
+      }
+
+      throw Exception(
+        response.data?['message'] ?? 'Failed to send OTP',
+      );
+    } on DioException catch (e) {
+      debugPrint('LOGIN OTP ERROR: ${e.response?.data}');
+
+      throw Exception(
+        e.response?.data?['message'] ?? 'Something went wrong',
+      );
+    }
+  }
 
   @override
   Future<void> forgotPassword({required String email}) async {
@@ -140,15 +172,21 @@ Future<String> loginOtp({required String email}) async {
   // }
 
   @override
-Future<Map<String, dynamic>> verifyOtp({
-  required String email,
-  required String otp,
-}) async {
-  try {
-    final response = await authApi.verifyOtp(
-      email: email,
-      otp: otp,
-    );
+  Future<Map<String, dynamic>> verifyOtp({
+    required String email,
+    required String otp,
+    required String deviceId,
+    required String appVersion,
+    required String platform,
+  }) async {
+    try {
+      final response = await authApi.verifyOtp(
+        email: email,
+        otp: otp,
+        deviceId: deviceId,
+        appVersion: appVersion,
+        platform: platform,
+      );
 
     debugPrint('VERIFY OTP RESPONSE: ${response.data}');
 
@@ -214,9 +252,17 @@ Future<Map<String, dynamic>> verifyOtp({
   }
 }
   @override
-  Future<void> resendOtp({required String email}) async {
+  Future<void> resendOtp({
+    required String email,
+    required String deviceId,
+    required String appVersion,
+  }) async {
     try {
-      final response = await authApi.resendOtp(email: email);
+      final response = await authApi.resendOtp(
+        email: email,
+        deviceId: deviceId,
+        appVersion: appVersion,
+      );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         return;
