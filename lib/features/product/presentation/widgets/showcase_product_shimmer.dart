@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:shimmer/shimmer.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 class ShowcaseProductShimmer extends StatelessWidget {
   const ShowcaseProductShimmer({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Shimmer.fromColors(
-      baseColor: Colors.grey.shade300,
-      highlightColor: Colors.grey.shade100,
+    return Skeletonizer(
+      enabled: true,
       child: Container(
-        width: double.infinity,
         height: 265.h,
-        padding: EdgeInsets.all(12.w),
+        width: double.infinity,
+        padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12.r),
@@ -21,47 +20,36 @@ class ShowcaseProductShimmer extends StatelessWidget {
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            ClipRRect(
+            Bone(
+              width: double.infinity,
+              height: 120.h,
               borderRadius: BorderRadius.circular(8.r),
-              child: Container(
-                width: double.infinity,
-                height: 120.h,
-                color: Colors.white,
-              ),
             ),
 
             SizedBox(height: 10.h),
 
-            Container(
-              height: 18.h,
+            Bone(
               width: 60.w,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(6.r),
-              ),
-            ),
-
-            SizedBox(height: 7.h),
-
-            Container(
-              height: 13.h,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(4.r),
-              ),
+              height: 18.h,
+              borderRadius: BorderRadius.circular(6.r),
             ),
 
             SizedBox(height: 6.h),
 
-            Container(
-              height: 10.h,
+            Bone(
+              width: double.infinity,
+              height: 13.h,
+              borderRadius: BorderRadius.circular(4.r),
+            ),
+
+            SizedBox(height: 4.h),
+
+            Bone(
               width: 90.w,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(4.r),
-              ),
+              height: 10.h,
+              borderRadius: BorderRadius.circular(4.r),
             ),
 
             const Spacer(),
@@ -69,29 +57,20 @@ class ShowcaseProductShimmer extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                // Price
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        height: 9.h,
+                      Bone(
                         width: 35.w,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(4.r),
-                        ),
+                        height: 9.h,
+                        borderRadius: BorderRadius.circular(4.r),
                       ),
-
-                      SizedBox(height: 4.h),
-
-                      Container(
-                        height: 15.h,
+                      SizedBox(height: 2.h),
+                      Bone(
                         width: 60.w,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(4.r),
-                        ),
+                        height: 15.h,
+                        borderRadius: BorderRadius.circular(4.r),
                       ),
                     ],
                   ),
@@ -99,14 +78,10 @@ class ShowcaseProductShimmer extends StatelessWidget {
 
                 SizedBox(width: 6.w),
 
-                // Interested button
-                Container(
+                Bone(
                   width: 78.w,
                   height: 32.h,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20.r),
-                  ),
+                  borderRadius: BorderRadius.circular(10.r),
                 ),
               ],
             ),

@@ -7,7 +7,7 @@ import 'package:medtech_project/features/scan_history/presentation/bloc/scan_his
 import 'package:medtech_project/features/scan_history/presentation/bloc/scan_history_event.dart';
 import 'package:medtech_project/features/scan_history/presentation/bloc/scan_history_state.dart';
 import 'package:medtech_project/features/scan_history/presentation/widgtes/scan_history_card.dart';
-import 'package:shimmer/shimmer.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 class ScanHistoryScreen extends StatelessWidget {
   const ScanHistoryScreen({super.key});
@@ -169,153 +169,92 @@ class _ScanHistoryViewState extends State<_ScanHistoryView> {
   }
 
   Widget _buildCardShimmer() {
-    return Shimmer.fromColors(
-      baseColor: Colors.grey.shade300,
-      highlightColor: Colors.grey.shade100,
-      period: const Duration(milliseconds: 1200),
-      child: Container(
-        height: 220.h,
-        margin: EdgeInsets.only(bottom: 12.h),
-        padding: EdgeInsets.all(16.w),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16.r),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                // Circle icon
-                Container(
-                  width: 44.w,
-                  height: 44.w,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-
-                SizedBox(width: 12.w),
-
-                // Product + outlet
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        height: 14.h,
-                        width: 140.w,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(5.r),
-                        ),
-                      ),
-
-                      SizedBox(height: 8.h),
-
-                      Container(
-                        height: 11.h,
-                        width: 100.w,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(5.r),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                // Status
-                Container(
-                  height: 26.h,
-                  width: 65.w,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20.r),
-                  ),
-                ),
-              ],
-            ),
-
-            SizedBox(height: 18.h),
-
-            Container(height: 1, width: double.infinity, color: Colors.white),
-
-            SizedBox(height: 16.h),
-
-            Row(
-              children: [
-                Container(
-                  width: 17.w,
-                  height: 17.w,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-
-                SizedBox(width: 8.w),
-
-                Container(
-                  height: 11.h,
-                  width: 180.w,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(5.r),
-                  ),
-                ),
-              ],
-            ),
-
-            SizedBox(height: 12.h),
-
-            Row(
-              children: [
-                Container(
-                  width: 17.w,
-                  height: 17.w,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-
-                SizedBox(width: 8.w),
-
-                Container(
-                  height: 11.h,
-                  width: 220.w,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(5.r),
-                  ),
-                ),
-              ],
-            ),
-
-            const Spacer(),
-
-            Container(
-              height: 38.h,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10.r),
-              ),
-            ),
-          ],
-        ),
+  return Skeletonizer(
+    enabled: true,
+    child: Container(
+      height: 220.h,
+      margin: EdgeInsets.only(bottom: 12.h),
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
-    );
-  }
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Bone.circle(size: 44.w),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Bone(
+                      width: 140.w,
+                      height: 14.h,
+                      borderRadius: BorderRadius.circular(5.r),
+                    ),
+                    SizedBox(height: 8.h),
+                    Bone(
+                      width: 100.w,
+                      height: 11.h,
+                      borderRadius: BorderRadius.circular(5.r),
+                    ),
+                  ],
+                ),
+              ),
+              Bone(
+                width: 65.w,
+                height: 26.h,
+                borderRadius: BorderRadius.circular(20.r),
+              ),
+            ],
+          ),
+          SizedBox(height: 18.h),
+          Bone(width: double.infinity, height: 1.h),
+          SizedBox(height: 16.h),
+          Row(
+            children: [
+              Bone.circle(size: 17.w),
+              SizedBox(width: 8.w),
+              Bone(
+                width: 180.w,
+                height: 11.h,
+                borderRadius: BorderRadius.circular(5.r),
+              ),
+            ],
+          ),
+          SizedBox(height: 12.h),
+          Row(
+            children: [
+              Bone.circle(size: 17.w),
+              SizedBox(width: 8.w),
+              Bone(
+                width: 220.w,
+                height: 11.h,
+                borderRadius: BorderRadius.circular(5.r),
+              ),
+            ],
+          ),
+          const Spacer(),
+          Bone(
+            width: double.infinity,
+            height: 38.h,
+            borderRadius: BorderRadius.circular(10.r),
+          ),
+        ],
+      ),
+    ),
+  );
+}
 
   Widget _buildEmptyState() {
     return Center(

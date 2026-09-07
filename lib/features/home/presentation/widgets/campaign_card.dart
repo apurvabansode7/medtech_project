@@ -57,6 +57,8 @@ class CampaignCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
+
+                      
                       // Small label
                       Row(
                         children: [

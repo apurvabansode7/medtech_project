@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:shimmer/shimmer.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 class AvailableRewardShimmer extends StatelessWidget {
   const AvailableRewardShimmer({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Shimmer.fromColors(
-      baseColor: Colors.grey.shade300,
-      highlightColor: Colors.grey.shade100,
+    return Skeletonizer(
+      enabled: true,
       child: Container(
         width: double.infinity,
         height: 290.h,
@@ -22,49 +21,34 @@ class AvailableRewardShimmer extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ClipRRect(
+            Bone(
+              width: double.infinity,
+              height: 115.h,
               borderRadius: BorderRadius.circular(8.r),
-              child: Container(
-                width: double.infinity,
-                height: 115.h,
-                color: Colors.white,
-              ),
             ),
             SizedBox(height: 8.h),
-            Container(
-              height: 14.h,
+            Bone(
               width: 60.w,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-            ),
-            SizedBox(height: 6.h),
-            Container(
               height: 14.h,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(4.r),
-              ),
+              borderRadius: BorderRadius.circular(12.r),
             ),
             SizedBox(height: 6.h),
-            Container(
-              height: 12.h,
+            Bone(
+              width: double.infinity,
+              height: 14.h,
+              borderRadius: BorderRadius.circular(4.r),
+            ),
+            SizedBox(height: 6.h),
+            Bone(
               width: 80.w,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(4.r),
-              ),
+              height: 12.h,
+              borderRadius: BorderRadius.circular(4.r),
             ),
             const Spacer(),
-            Container(
+            Bone(
               width: double.infinity,
               height: 32.h,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(7.r),
-              ),
+              borderRadius: BorderRadius.circular(7.r),
             ),
           ],
         ),
@@ -72,4 +56,3 @@ class AvailableRewardShimmer extends StatelessWidget {
     );
   }
 }
-

@@ -66,10 +66,11 @@ void main() async {
   await dotenv.load(fileName: '.env');
 
   runApp(
-    //DevicePreview(enabled: true, builder: (context) =>
+  // DevicePreview(enabled: true, builder: (context) =>
      const MedTechApp()
-     //),
+   // ),
   );
+
 }
 
 class InternetStatusListener extends StatefulWidget {

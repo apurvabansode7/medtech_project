@@ -1,4 +1,3 @@
-
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -13,7 +12,9 @@ import 'package:medtech_project/features/home/presentation/bloc/enroll_campaign_
 import 'package:medtech_project/features/home/presentation/bloc/campaign_bloc.dart';
 import 'package:medtech_project/features/home/presentation/bloc/campaign_event.dart';
 import 'package:medtech_project/features/home/presentation/bloc/campaign_state.dart';
+import 'package:medtech_project/features/home/presentation/widgets/animated_points_summary.dart';
 import 'package:medtech_project/features/home/presentation/widgets/campaign_card.dart';
+import 'package:medtech_project/features/home/presentation/widgets/points_summary_card.dart';
 
 // Profile
 import 'package:medtech_project/features/profile/presentation/bloc/profile.bloc.dart';
@@ -36,7 +37,7 @@ import 'package:medtech_project/features/wallet/presenation/screens/wallet_scree
 import 'package:medtech_project/features/wallet/presenation/widgets/wallet_card.dart';
 import 'package:medtech_project/utils/app_snack_bar.dart';
 
-import 'package:shimmer/shimmer.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 @RoutePage()
 class HomeScreen extends StatelessWidget {
@@ -158,6 +159,18 @@ class _HomeScreenViewState extends State<_HomeScreenView> {
                     style: TextStyle(fontSize: 15.sp, color: Colors.grey),
                   ),
                 ),
+                SizedBox(height: 10.h),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16.w),
+                  child: const PointsSummaryCard(
+                    totalEarnedPoints: 1250,
+                    earnedPoints: 1000,
+                    pendingPoints: 250,
+                    schemaTotalPoints: 500,
+                    schemaEarnedPoints: 400,
+                    schemaPendingPoints: 100,
+                  ),
+                ),
                 // CAMPAIGNS
                 BlocConsumer<CampaignEnrollBloc, CampaignEnrollState>(
                   listener: (context, enrollState) {
@@ -228,6 +241,7 @@ class _HomeScreenViewState extends State<_HomeScreenView> {
 
                           return SizedBox(
                             height: 160.h,
+
                             child: ListView.builder(
                               padding: EdgeInsets.symmetric(horizontal: 16.w),
                               scrollDirection: Axis.horizontal,
@@ -398,9 +412,7 @@ class _HomeScreenViewState extends State<_HomeScreenView> {
                       TextButton(
                         onPressed: () {
                           Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => WalletScreen(),
-                            ),
+                            MaterialPageRoute(builder: (_) => WalletScreen()),
                           );
                         },
                         child: Text(
@@ -490,114 +502,75 @@ class _HomeScreenViewState extends State<_HomeScreenView> {
   }
 
   // CAMPAIGN SHIMMER
-
   Widget _buildBannerShimmer() {
     return SizedBox(
-      height: 160.h,
-      child: Shimmer.fromColors(
-        baseColor: Colors.grey.shade300,
-        highlightColor: Colors.grey.shade100,
-        child: ListView.builder(
-          padding: EdgeInsets.symmetric(horizontal: 16.w),
-          scrollDirection: Axis.horizontal,
-          itemCount: 3,
-          itemBuilder: (context, index) {
-            return Container(
+      height: 180.h,
+      child: ListView.builder(
+        padding: EdgeInsets.symmetric(horizontal: 16.w),
+        scrollDirection: Axis.horizontal,
+        itemCount: 3,
+        itemBuilder: (context, index) {
+          return Skeletonizer(
+            child: Container(
               width: 300.w,
-              height: 150.h,
+              height: 170.h,
               margin: EdgeInsets.only(right: 12.w),
+              padding: EdgeInsets.all(18.w),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(18.r),
               ),
-              child: Padding(
-                padding: EdgeInsets.all(18.w),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            height: 18.h,
-                            width: 150.w,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(5.r),
-                            ),
-                          ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Bone(width: 150.w, height: 18.h),
 
-                          SizedBox(height: 10.h),
+                        SizedBox(height: 10.h),
 
-                          Container(
-                            height: 10.h,
-                            width: double.infinity,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(5.r),
-                            ),
-                          ),
+                        Bone(width: double.infinity, height: 10.h),
 
-                          SizedBox(height: 6.h),
+                        SizedBox(height: 6.h),
 
-                          Container(
-                            height: 10.h,
-                            width: 110.w,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(5.r),
-                            ),
-                          ),
+                        Bone(width: 110.w, height: 10.h),
 
-                          SizedBox(height: 14.h),
+                        SizedBox(height: 14.h),
 
-                          Container(
-                            height: 28.h,
-                            width: 70.w,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(8.r),
-                            ),
-                          ),
-                        ],
-                      ),
+                        Bone(
+                          width: 70.w,
+                          height: 28.h,
+                          borderRadius: BorderRadius.circular(8.r),
+                        ),
+                      ],
                     ),
+                  ),
 
-                    SizedBox(width: 12.w),
+                  SizedBox(width: 12.w),
 
-                    Container(
-                      width: 72.w,
-                      height: 72.w,
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ],
-                ),
+                  Bone.circle(size: 72.w),
+                ],
               ),
-            );
-          },
-        ),
+            ),
+          );
+        },
       ),
     );
   }
-
   // WALLET SHIMMER
 
   Widget _buildWalletTransactionShimmer() {
-    return Shimmer.fromColors(
-      baseColor: Colors.grey.shade300,
-      highlightColor: Colors.grey.shade100,
-      child: ListView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        padding: EdgeInsets.symmetric(horizontal: 16.w),
-        itemCount: 5,
-        itemBuilder: (context, index) {
-          return Container(
-            height: 145.h,
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      padding: EdgeInsets.symmetric(horizontal: 16.w),
+      itemCount: 5,
+      itemBuilder: (context, index) {
+        return Skeletonizer(
+          child: Container(
             margin: EdgeInsets.only(bottom: 12.h),
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
@@ -605,96 +578,65 @@ class _HomeScreenViewState extends State<_HomeScreenView> {
               borderRadius: BorderRadius.circular(16.r),
             ),
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Row(
                   children: [
-                    Container(
-                      width: 46.w,
-                      height: 46.w,
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
+                    Bone.circle(size: 46.w),
 
                     SizedBox(width: 12.w),
 
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Container(
-                            height: 14.h,
-                            width: 120.w,
-                            color: Colors.white,
-                          ),
-
+                          Bone(width: 120.w, height: 14.h),
                           SizedBox(height: 8.h),
-
-                          Container(
-                            height: 10.h,
-                            width: 180.w,
-                            color: Colors.white,
-                          ),
-
+                          Bone(width: 180.w, height: 10.h),
                           SizedBox(height: 6.h),
-
-                          Container(
-                            height: 10.h,
-                            width: 130.w,
-                            color: Colors.white,
-                          ),
+                          Bone(width: 130.w, height: 10.h),
                         ],
                       ),
                     ),
 
                     SizedBox(width: 10.w),
 
-                    Container(height: 16.h, width: 45.w, color: Colors.white),
+                    Bone(width: 45.w, height: 16.h),
                   ],
                 ),
 
                 SizedBox(height: 18.h),
 
-                Container(
-                  height: 1,
-                  width: double.infinity,
-                  color: Colors.white,
-                ),
+                Bone(width: double.infinity, height: 1.h),
 
                 SizedBox(height: 12.h),
 
                 Row(
                   children: [
-                    Container(height: 12.h, width: 100.w, color: Colors.white),
-
+                    Bone(width: 100.w, height: 12.h),
                     const Spacer(),
-
-                    Container(height: 12.h, width: 90.w, color: Colors.white),
+                    Bone(width: 90.w, height: 12.h),
                   ],
                 ),
               ],
             ),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 
   // SCAN HISTORY SHIMMER
-
   Widget _buildScanHistoryShimmer() {
-    return Shimmer.fromColors(
-      baseColor: Colors.grey.shade300,
-      highlightColor: Colors.grey.shade100,
-      child: ListView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        padding: EdgeInsets.symmetric(horizontal: 16.w),
-        itemCount: 3,
-        itemBuilder: (context, index) {
-          return Container(
-            height: 220.h,
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      padding: EdgeInsets.symmetric(horizontal: 16.w),
+      itemCount: 3,
+      itemBuilder: (context, index) {
+        return Skeletonizer(
+          child: Container(
             margin: EdgeInsets.only(bottom: 12.h),
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
@@ -703,80 +645,42 @@ class _HomeScreenViewState extends State<_HomeScreenView> {
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Row(
                   children: [
-                    Container(
-                      width: 44.w,
-                      height: 44.w,
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
+                    Bone.circle(size: 44.w),
 
                     SizedBox(width: 12.w),
 
-                    Expanded(
-                      child: Container(
-                        height: 16.h,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(5.r),
-                        ),
-                      ),
-                    ),
+                    Expanded(child: Bone(height: 16.h)),
                   ],
                 ),
 
                 SizedBox(height: 20.h),
 
-                Container(
-                  height: 12.h,
+                Bone(width: double.infinity, height: 12.h),
+
+                SizedBox(height: 10.h),
+
+                Bone(width: 250.w, height: 12.h),
+
+                SizedBox(height: 10.h),
+
+                Bone(width: 200.w, height: 12.h),
+
+                SizedBox(height: 16.h),
+
+                Bone(
                   width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(5.r),
-                  ),
-                ),
-
-                SizedBox(height: 10.h),
-
-                Container(
-                  height: 12.h,
-                  width: 250.w,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(5.r),
-                  ),
-                ),
-
-                SizedBox(height: 10.h),
-
-                Container(
-                  height: 12.h,
-                  width: 200.w,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(5.r),
-                  ),
-                ),
-
-                const Spacer(),
-
-                Container(
                   height: 35.h,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8.r),
-                  ),
+                  borderRadius: BorderRadius.circular(8.r),
                 ),
               ],
             ),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 }

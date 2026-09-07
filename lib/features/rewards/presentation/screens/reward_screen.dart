@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:medtech_project/components/comfirmation_dialog.dart';
 import 'package:medtech_project/constant/app_colors.dart';
-import 'package:medtech_project/core/services/api_services.dart';
-import 'package:medtech_project/features/rewards/data/api/reward_api.dart';
+
 import 'package:medtech_project/features/rewards/data/models/available_rewards_response.dart';
 import 'package:medtech_project/features/rewards/domain/repositories/reward_repository.dart';
-import 'package:medtech_project/features/rewards/data/repositories/reward_repository_impl.dart';
 import 'package:medtech_project/features/rewards/presentation/bloc/available_rewards_bloc.dart';
 import 'package:medtech_project/features/rewards/presentation/bloc/available_rewards_event.dart';
 import 'package:medtech_project/features/rewards/presentation/bloc/available_rewards_state.dart';
@@ -63,46 +62,68 @@ class _RewardScreenState extends State<RewardScreen> {
     super.dispose();
   }
 
+  // void _onRedeem(BuildContext context, AvailableRewardItem reward) {
+  //   showDialog(
+  //     context: context,
+  //     builder: (dialogContext) {
+  //       return AlertDialog(
+  //         shape: RoundedRectangleBorder(
+  //           borderRadius: BorderRadius.circular(16.r),
+  //         ),
+  //         title: const Text('Claim Reward'),
+  //         content: Text(
+  //           'Do you want to claim ${reward.name} '
+  //           'for ${reward.pointsRequired} points?',
+  //         ),
+  //         actions: [
+  //           TextButton(
+  //             onPressed: () {
+  //               Navigator.pop(dialogContext);
+  //             },
+  //             child: const Text('Cancel'),
+  //           ),
+  //           ElevatedButton(
+  //             onPressed: () {
+  //               Navigator.pop(dialogContext);
+
+  //               // IMPORTANT:
+  //               // Use the RewardScreen provider context.
+  //               context.read<RewardBloc>().add(
+  //                 SubmitRewardClaim(rewardId: reward.id),
+  //               );
+  //             },
+  //             style: ElevatedButton.styleFrom(
+  //               backgroundColor: AppColors.primary,
+  //             ),
+  //             child: const Text('Claim', style: TextStyle(color: Colors.white)),
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
   void _onRedeem(BuildContext context, AvailableRewardItem reward) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16.r),
-          ),
-          title: const Text('Claim Reward'),
-          content: Text(
+  showDialog(
+    context: context,
+    builder: (dialogContext) {
+      return ConfirmationDialog(
+        title: 'Claim Reward',
+        message:
             'Do you want to claim ${reward.name} '
             'for ${reward.pointsRequired} points?',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(dialogContext);
-              },
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(dialogContext);
+        cancelText: 'Cancel',
+        confirmText: 'Claim',
+        onConfirm: () {
+          Navigator.pop(dialogContext);
 
-                // IMPORTANT:
-                // Use the RewardScreen provider context.
-                context.read<RewardBloc>().add(
-                  SubmitRewardClaim(rewardId: reward.id),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-              ),
-              child: const Text('Claim', style: TextStyle(color: Colors.white)),
-            ),
-          ],
-        );
-      },
-    );
-  }
+          context.read<RewardBloc>().add(
+            SubmitRewardClaim(rewardId: reward.id),
+          );
+        },
+      );
+    },
+  );
+}
 
   @override
   Widget build(BuildContext context) {

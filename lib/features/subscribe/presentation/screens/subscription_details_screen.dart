@@ -12,6 +12,7 @@ import 'package:medtech_project/features/subscribe/presentation/bloc/campaign_re
 import 'package:medtech_project/features/subscribe/presentation/bloc/campaign_rewards_state.dart';
 import 'package:medtech_project/utils/app_snack_bar.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 class SubscriptionDetailsScreen extends StatefulWidget {
   const SubscriptionDetailsScreen({super.key, required this.campaign});
@@ -721,43 +722,183 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
     );
   }
 
-  Widget _buildEarningsShimmer() {
-    return Shimmer.fromColors(
-      baseColor: Colors.grey.shade300,
-      highlightColor: Colors.grey.shade100,
-      child: Container(
-        width: double.infinity,
-        height: 160.h,
-        decoration: BoxDecoration(
-          color: AppColors.white,
-          borderRadius: BorderRadius.circular(18.r),
-        ),
+Widget _buildEarningsShimmer() {
+  return Skeletonizer(
+    enabled: true,
+    child: Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(18.r),
       ),
-    );
-  }
-
-  Widget _buildRewardsShimmer() {
-    return Column(
-      children: List.generate(
-        2,
-        (index) => Padding(
-          padding: EdgeInsets.only(bottom: 12.h),
-          child: Shimmer.fromColors(
-            baseColor: Colors.grey.shade300,
-            highlightColor: Colors.grey.shade100,
-            child: Container(
-              width: double.infinity,
-              height: 120.h,
-              decoration: BoxDecoration(
-                color: AppColors.white,
-                borderRadius: BorderRadius.circular(16.r),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Bone.circle(size: 52.w),
+              SizedBox(width: 14.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Bone(
+                      width: 170.w,
+                      height: 17.h,
+                      borderRadius: BorderRadius.circular(4.r),
+                    ),
+                    SizedBox(height: 7.h),
+                    Bone(
+                      width: double.infinity,
+                      height: 12.h,
+                      borderRadius: BorderRadius.circular(4.r),
+                    ),
+                    SizedBox(height: 5.h),
+                    Bone(
+                      width: 130.w,
+                      height: 12.h,
+                      borderRadius: BorderRadius.circular(4.r),
+                    ),
+                  ],
+                ),
               ),
-            ),
+            ],
+          ),
+          SizedBox(height: 20.h),
+          Bone(width: double.infinity, height: 1.h),
+          SizedBox(height: 20.h),
+          Row(
+            children: [
+              Expanded(child: _buildStatShimmer()),
+              SizedBox(width: 12.w),
+              Expanded(child: _buildStatShimmer()),
+            ],
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+Widget _buildStatShimmer() {
+  return Container(
+    height: 68.h,
+    padding: EdgeInsets.all(12.w),
+    decoration: BoxDecoration(
+      color: AppColors.background,
+      borderRadius: BorderRadius.circular(12.r),
+    ),
+    child: Row(
+      children: [
+        Bone.circle(size: 38.w),
+        SizedBox(width: 8.w),
+        Expanded(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Bone(
+                width: 42.w,
+                height: 15.h,
+                borderRadius: BorderRadius.circular(4.r),
+              ),
+              SizedBox(height: 5.h),
+              Bone(
+                width: double.infinity,
+                height: 10.h,
+                borderRadius: BorderRadius.circular(4.r),
+              ),
+            ],
           ),
         ),
+      ],
+    ),
+  );
+}
+
+Widget _buildRewardsShimmer() {
+  return Skeletonizer(
+    enabled: true,
+    child: Column(
+      children: List.generate(
+        2,
+        (_) => Padding(
+          padding: EdgeInsets.only(bottom: 12.h),
+          child: _buildRewardShimmerCard(),
+        ),
       ),
-    );
-  }
+    ),
+  );
+}
+
+Widget _buildRewardShimmerCard() {
+  return Container(
+    width: double.infinity,
+    padding: EdgeInsets.all(16.w),
+    decoration: BoxDecoration(
+      color: AppColors.white,
+      borderRadius: BorderRadius.circular(16.r),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Bone(
+              width: 52.w,
+              height: 52.w,
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Bone(
+                    width: double.infinity,
+                    height: 15.h,
+                    borderRadius: BorderRadius.circular(4.r),
+                  ),
+                  SizedBox(height: 7.h),
+                  Bone(
+                    width: 85.w,
+                    height: 11.h,
+                    borderRadius: BorderRadius.circular(4.r),
+                  ),
+                  SizedBox(height: 6.h),
+                  Bone(
+                    width: double.infinity,
+                    height: 11.h,
+                    borderRadius: BorderRadius.circular(4.r),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 14.h),
+        Bone(width: double.infinity, height: 1.h),
+        SizedBox(height: 12.h),
+        Row(
+          children: [
+            Bone(
+              width: 105.w,
+              height: 30.h,
+              borderRadius: BorderRadius.circular(8.r),
+            ),
+            const Spacer(),
+            Bone(
+              width: 80.w,
+              height: 35.h,
+              borderRadius: BorderRadius.circular(10.r),
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
+}
 
   Widget _buildEarningsError(String message) {
     return Container(

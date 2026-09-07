@@ -2,21 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:medtech_project/constant/app_colors.dart';
 
-class ConfirmationDialog extends StatelessWidget {
-  const ConfirmationDialog({
+class ExitAppDialog extends StatelessWidget {
+  const ExitAppDialog({
     super.key,
-    required this.title,
-    required this.message,
-    required this.onConfirm,
-    this.confirmText = 'Confirm',
-    this.cancelText = 'Cancel',
+    required this.onExit,
   });
 
-  final String title;
-  final String message;
-  final VoidCallback onConfirm;
-  final String confirmText;
-  final String cancelText;
+  final VoidCallback onExit;
 
   @override
   Widget build(BuildContext context) {
@@ -32,9 +24,11 @@ class ConfirmationDialog extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+          
+
             // Title
             Text(
-              title,
+              'Exit MedTech?',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 20.sp,
@@ -47,7 +41,7 @@ class ConfirmationDialog extends StatelessWidget {
 
             // Message
             Text(
-              message,
+              'Are you sure you want to close the app?',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14.sp,
@@ -68,13 +62,15 @@ class ConfirmationDialog extends StatelessWidget {
                     },
                     style: OutlinedButton.styleFrom(
                       minimumSize: Size(double.infinity, 38.h),
-                      side: BorderSide(color: Colors.grey.shade300),
+                      side: BorderSide(
+                        color: Colors.grey.shade300,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14.r),
                       ),
                     ),
                     child: Text(
-                      cancelText,
+                      'Close',
                       style: TextStyle(
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w600,
@@ -88,7 +84,7 @@ class ConfirmationDialog extends StatelessWidget {
 
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: onConfirm,
+                    onPressed: onExit,
                     style: ElevatedButton.styleFrom(
                       minimumSize: Size(double.infinity, 38.h),
                       backgroundColor: AppColors.primary,
@@ -99,7 +95,7 @@ class ConfirmationDialog extends StatelessWidget {
                       ),
                     ),
                     child: Text(
-                      confirmText,
+                      'Exit',
                       style: TextStyle(
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w600,

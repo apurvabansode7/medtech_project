@@ -5,6 +5,7 @@ import 'package:medtech_project/constant/app_colors.dart';
 
 import 'package:medtech_project/features/home/data/models/partner_campaign_response.dart';
 import 'package:medtech_project/features/home/domain/repositories/campaign_repository.dart';
+import 'package:medtech_project/features/home/presentation/widgets/animated_points_summary.dart';
 
 import 'package:medtech_project/features/home/presentation/widgets/campaign_card.dart';
 import 'package:medtech_project/features/subscribe/presentation/bloc/campaign_earnings_bloc.dart.dart';
@@ -14,7 +15,7 @@ import 'package:medtech_project/features/subscribe/presentation/bloc/campaign_su
 import 'package:medtech_project/features/subscribe/presentation/bloc/campaign_subscribed_state.dart';
 import 'package:medtech_project/features/subscribe/presentation/screens/subscription_details_screen.dart';
 
-import 'package:shimmer/shimmer.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 class SubscriptionScreen extends StatefulWidget {
   const SubscriptionScreen({super.key});
@@ -195,24 +196,100 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
             return _buildEmpty();
           }
 
+          // return RefreshIndicator(
+          //   onRefresh: _onRefresh,
+          //   child: ListView.builder(
+          //     controller: _scrollController,
+          //     physics: const AlwaysScrollableScrollPhysics(),
+          //     padding: EdgeInsets.all(16.w),
+          //     itemCount: _subscribedCampaigns.length + (_isLoadingMore ? 1 : 0),
+          //     itemBuilder: (context, index) {
+          //       if (index >= _subscribedCampaigns.length) {
+          //         return _buildLoadingMore();
+          //       }
+
+          //       final campaign = _subscribedCampaigns[index];
+
+          //       return Padding(
+          //         padding: EdgeInsets.only(bottom: 12.h),
+          //         child: GestureDetector(
+
+          //           onTap: () {
+          //             final repository = context.read<CampaignRepository>();
+
+          //             Navigator.push(
+          //               context,
+          //               MaterialPageRoute(
+          //                 builder:
+          //                     (_) => MultiBlocProvider(
+          //                       providers: [
+          //                         BlocProvider<CampaignEarningsBloc>(
+          //                           create:
+          //                               (_) => CampaignEarningsBloc(
+          //                                 repository: repository,
+          //                               ),
+          //                         ),
+          //                         BlocProvider<CampaignRewardsBloc>(
+          //                           create:
+          //                               (_) => CampaignRewardsBloc(
+          //                                 repository: repository,
+          //                               ),
+          //                         ),
+          //                       ],
+          //                       child: SubscriptionDetailsScreen(
+          //                         campaign: campaign,
+          //                       ),
+          //                     ),
+          //               ),
+          //             );
+          //           },
+          //           child: CampaignCard(
+          //             title: campaign.name,
+          //             description: campaign.description,
+          //             pointsAvailable: campaign.pointsAvailable,
+          //             icon: Icons.card_giftcard,
+          //             isLoading: false,
+          //             showSubscribeButton: false,
+          //             onSubscribeTap: () {},
+          //           ),
+          //         ),
+          //       );
+          //     },
+          //   ),
+          // );
+
           return RefreshIndicator(
             onRefresh: _onRefresh,
             child: ListView.builder(
               controller: _scrollController,
               physics: const AlwaysScrollableScrollPhysics(),
               padding: EdgeInsets.all(16.w),
-              itemCount: _subscribedCampaigns.length + (_isLoadingMore ? 1 : 0),
+
+              // +1 = AnimatedPointsSummary
+              // +1 = loading indicator when loading more
+              itemCount:
+                  _subscribedCampaigns.length + 1 + (_isLoadingMore ? 1 : 0),
+
               itemBuilder: (context, index) {
-                if (index >= _subscribedCampaigns.length) {
+                // POINTS SUMMARY AT TOP
+
+                if (index == 0) {
+                  return _buildPointsSummary();
+                }
+
+                // LOADING MORE
+
+                if (index == _subscribedCampaigns.length + 1) {
                   return _buildLoadingMore();
                 }
 
-                final campaign = _subscribedCampaigns[index];
+                // CAMPAIGN CARD
+
+                final campaign = _subscribedCampaigns[index - 1];
 
                 return Padding(
                   padding: EdgeInsets.only(bottom: 12.h),
                   child: GestureDetector(
-                   
                     onTap: () {
                       final repository = context.read<CampaignRepository>();
 
@@ -337,25 +414,96 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       child: const Center(child: CircularProgressIndicator()),
     );
   }
-
-  Widget _buildShimmer() {
-    return ListView.builder(
+Widget _buildShimmer() {
+  return Skeletonizer(
+    enabled: true,
+    child: ListView.builder(
+      physics: const AlwaysScrollableScrollPhysics(),
       padding: EdgeInsets.all(16.w),
       itemCount: 5,
       itemBuilder: (context, index) {
-        return Shimmer.fromColors(
-          baseColor: Colors.grey.shade300,
-          highlightColor: Colors.grey.shade100,
-          child: Container(
-            height: 150.h,
-            margin: EdgeInsets.only(bottom: 12.h),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(18.r),
-            ),
+        return Container(
+          height: 150.h,
+          margin: EdgeInsets.only(bottom: 12.h),
+          padding: EdgeInsets.all(16.w),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(18.r),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Bone.circle(size: 44.w),
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Bone(
+                          width: 150.w,
+                          height: 15.h,
+                          borderRadius: BorderRadius.circular(4.r),
+                        ),
+                        SizedBox(height: 8.h),
+                        Bone(
+                          width: 110.w,
+                          height: 11.h,
+                          borderRadius: BorderRadius.circular(4.r),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Bone(
+                    width: 60.w,
+                    height: 24.h,
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                ],
+              ),
+              const Spacer(),
+              Bone(
+                width: double.infinity,
+                height: 12.h,
+                borderRadius: BorderRadius.circular(4.r),
+              ),
+              SizedBox(height: 8.h),
+              Bone(
+                width: 190.w,
+                height: 11.h,
+                borderRadius: BorderRadius.circular(4.r),
+              ),
+            ],
           ),
         );
       },
+    ),
+  );
+}
+
+  Widget _buildPointsSummary() {
+    if (_subscribedCampaigns.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final totalEarned = _subscribedCampaigns.fold<int>(
+      0,
+      (sum, campaign) => sum + campaign.pointsEarned,
+    );
+
+    final totalAvailable = _subscribedCampaigns.fold<int>(
+      0,
+      (sum, campaign) => sum + campaign.pointsAvailable,
+    );
+
+    final pendingPoints = totalEarned - totalAvailable;
+
+    return AnimatedPointsSummary(
+      totalEarned: totalEarned,
+      requiredPoints: totalAvailable,
+      pendingPoints: pendingPoints,
+       showSchemaPoints: false,
     );
   }
 }
