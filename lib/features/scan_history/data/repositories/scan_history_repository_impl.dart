@@ -6,7 +6,7 @@ import '../models/scan_history_model.dart';
 
 class ScanHistoryRepositoryImpl
     implements ScanHistoryRepository {
-  final ScanHistoryApi scanHistoryApi;
+    final ScanHistoryApi scanHistoryApi;
 
   ScanHistoryRepositoryImpl({
     required this.scanHistoryApi,

@@ -1,73 +1,112 @@
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:medtech_project/constant/app_colors.dart';
+
+// Campaign
+import 'package:medtech_project/features/home/domain/repositories/campaign_repository.dart';
 import 'package:medtech_project/features/home/presentation/bloc/enroll_campaign_bloc.dart';
 import 'package:medtech_project/features/home/presentation/bloc/enroll_campaign_event.dart';
 import 'package:medtech_project/features/home/presentation/bloc/enroll_campaign_state.dart';
-import 'package:medtech_project/features/home/presentation/bloc/home_bloc.dart';
-import 'package:medtech_project/features/home/presentation/bloc/home_event.dart';
-import 'package:medtech_project/features/home/presentation/bloc/home_state.dart';
+import 'package:medtech_project/features/home/presentation/bloc/campaign_bloc.dart';
+import 'package:medtech_project/features/home/presentation/bloc/campaign_event.dart';
+import 'package:medtech_project/features/home/presentation/bloc/campaign_state.dart';
 import 'package:medtech_project/features/home/presentation/widgets/campaign_card.dart';
+
+// Profile
 import 'package:medtech_project/features/profile/presentation/bloc/profile.bloc.dart';
 import 'package:medtech_project/features/profile/presentation/bloc/profile_state.dart';
 
+// Scan History
+import 'package:medtech_project/features/scan_history/domain/repositories/scan_history_repository.dart';
 import 'package:medtech_project/features/scan_history/presentation/bloc/scan_history_bloc.dart';
 import 'package:medtech_project/features/scan_history/presentation/bloc/scan_history_event.dart';
 import 'package:medtech_project/features/scan_history/presentation/bloc/scan_history_state.dart';
 import 'package:medtech_project/features/scan_history/presentation/screens/scan_history_screen.dart';
 import 'package:medtech_project/features/scan_history/presentation/widgtes/scan_history_card.dart';
+
+// Wallet
+import 'package:medtech_project/features/wallet/domain/repositories/wallet_repositories.dart';
 import 'package:medtech_project/features/wallet/presenation/bloc/wallet_bloc.dart';
 import 'package:medtech_project/features/wallet/presenation/bloc/wallet_event.dart';
 import 'package:medtech_project/features/wallet/presenation/bloc/wallet_state.dart';
 import 'package:medtech_project/features/wallet/presenation/screens/wallet_screen.dart';
 import 'package:medtech_project/features/wallet/presenation/widgets/wallet_card.dart';
+import 'package:medtech_project/utils/app_snack_bar.dart';
+
 import 'package:shimmer/shimmer.dart';
 
 @RoutePage()
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  Widget build(BuildContext context) {
+    return MultiBlocProvider(
+      providers: [
+        // Home Bloc
+        BlocProvider<CampaignBloc>(
+          create:
+              (context) =>
+                  CampaignBloc(repository: context.read<CampaignRepository>())
+                    ..add(CampaignRequested(page: 1, pageSize: 10)),
+        ),
+
+        // Campaign Enroll Bloc
+        BlocProvider<CampaignEnrollBloc>(
+          create:
+              (context) => CampaignEnrollBloc(
+                repository: context.read<CampaignRepository>(),
+              ),
+        ),
+
+        // Scan History Bloc
+        BlocProvider<ScanHistoryBloc>(
+          create:
+              (context) => ScanHistoryBloc(
+                repository: context.read<ScanHistoryRepository>(),
+              )..add(LoadScanHistory(page: 1, limit: 5)),
+        ),
+
+        // Wallet Bloc
+        BlocProvider<WalletBloc>(
+          create:
+              (context) =>
+                  WalletBloc(repository: context.read<WalletRepository>())
+                    ..add(LoadWalletTransactions(page: 1, limit: 5)),
+        ),
+      ],
+      child: const _HomeScreenView(),
+    );
+  }
 }
 
-class _HomeScreenState extends State<HomeScreen> {
-  final Set<String> _subscribedCampaignIds = {};
-  // @override
-  // void initState() {
-  //   super.initState();
+class _HomeScreenView extends StatefulWidget {
+  const _HomeScreenView();
 
-  //   WidgetsBinding.instance.addPostFrameCallback((_) {
-  //     context.read<ScanHistoryBloc>().add(LoadScanHistory(page: 1, limit: 5));
-
-  //     context.read<WalletBloc>().add(LoadWalletTransactions(page: 1, limit: 5));
-  //   });
-  // }
   @override
-  void initState() {
-    super.initState();
+  State<_HomeScreenView> createState() => _HomeScreenViewState();
+}
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ScanHistoryBloc>().add(LoadScanHistory(page: 1, limit: 5));
-
-      context.read<WalletBloc>().add(LoadWalletTransactions(page: 1, limit: 5));
-      context.read<HomeBloc>().add(CampaignRequested(page: 1, pageSize: 10));
-    });
-  }
+class _HomeScreenViewState extends State<_HomeScreenView> {
+  final Set<String> _subscribedCampaignIds = {};
 
   Future<void> _onRefresh() async {
     if (!mounted) return;
 
     final scanHistoryBloc = context.read<ScanHistoryBloc>();
     final walletBloc = context.read<WalletBloc>();
-    final homeBloc = context.read<HomeBloc>();
+    final homeBloc = context.read<CampaignBloc>();
 
+    // Reload scan history
     scanHistoryBloc.add(LoadScanHistory(page: 1, limit: 5));
 
+    // Reload wallet transactions
     walletBloc.add(LoadWalletTransactions(page: 1, limit: 5));
 
+    // Reload campaigns
     homeBloc.add(CampaignRequested(page: 1, pageSize: 10));
 
     try {
@@ -119,32 +158,23 @@ class _HomeScreenState extends State<HomeScreen> {
                     style: TextStyle(fontSize: 15.sp, color: Colors.grey),
                   ),
                 ),
-
+                // CAMPAIGNS
                 BlocConsumer<CampaignEnrollBloc, CampaignEnrollState>(
                   listener: (context, enrollState) {
                     if (enrollState is CampaignEnrollSuccess) {
                       setState(() {
                         _subscribedCampaignIds.add(enrollState.campaignId);
                       });
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(enrollState.message),
-                          backgroundColor: Colors.green,
-                        ),
-                      );
+                      AppSnackbar.success(enrollState.message);
 
-                      context.read<HomeBloc>().add(
+                      // Reload campaigns after successful enrollment
+                      context.read<CampaignBloc>().add(
                         CampaignRequested(page: 1, pageSize: 10),
                       );
                     }
 
                     if (enrollState is CampaignEnrollFailure) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(enrollState.message),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
+                      AppSnackbar.error(enrollState.message);
                     }
                   },
                   builder: (context, enrollState) {
@@ -153,13 +183,15 @@ class _HomeScreenState extends State<HomeScreen> {
                             ? enrollState.campaignId
                             : null;
 
-                    return BlocBuilder<HomeBloc, HomeState>(
+                    return BlocBuilder<CampaignBloc, CampaignState>(
                       builder: (context, homeState) {
+                        // Campaign loading
                         if (homeState is CampaignLoading ||
-                            homeState is HomeInitial) {
+                            homeState is CampaignInitial) {
                           return _buildBannerShimmer();
                         }
 
+                        // Campaign error
                         if (homeState is CampaignFailure) {
                           return Padding(
                             padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -173,69 +205,11 @@ class _HomeScreenState extends State<HomeScreen> {
                           );
                         }
 
-                        // if (homeState is CampaignSuccess) {
-                        //   final campaigns = homeState.response.data.items;
-
-                        //   if (campaigns.isEmpty) {
-                        //     return const SizedBox.shrink();
-                        //   }
-
-                        //   return SizedBox(
-                        //     height: 160.h,
-                        //     child: ListView.builder(
-                        //       padding: EdgeInsets.symmetric(
-                        //         horizontal: 16.w,
-                        //       ),
-                        //       scrollDirection: Axis.horizontal,
-                        //       itemCount: campaigns.length,
-                        //       itemBuilder: (context, index) {
-                        //         final campaign = campaigns[index];
-                        //         final isSubscribed =
-                        //             campaign.isSubscribed ||
-                        //             _subscribedCampaignIds.contains(
-                        //               campaign.id,
-                        //             );
-
-                        //         return CampaignCard(
-                        //           title: campaign.name,
-                        //           description: campaign.description,
-                        //           icon: Icons.card_giftcard,
-                        //           isLoading:
-                        //               loadingCampaignId == campaign.id,
-                        //           showSubscribeButton: !isSubscribed,
-                        //           onSubscribeTap: () {
-                        //             final profileState =
-                        //                 context.read<ProfileBloc>().state;
-                        //             if (profileState is ProfileLoaded) {
-                        //               final profile = profileState.profile;
-                        //               context.read<CampaignEnrollBloc>().add(
-                        //                 EnrollCampaignRequested(
-                        //                   campaignId: campaign.id,
-                        //                   partnerId: profile.id,
-                        //                   partnerType: profile.type,
-                        //                   regionId: profile.regionId ?? '',
-                        //                 ),
-                        //               );
-                        //             } else {
-                        //               ScaffoldMessenger.of(context).showSnackBar(
-                        //                 const SnackBar(
-                        //                   content: Text(
-                        //                     'Profile loading, please try again',
-                        //                   ),
-                        //                 ),
-                        //               );
-                        //             }
-                        //           },
-                        //         );
-                        //       },
-                        //     ),
-                        //   );
-                        // }
-
+                        // Campaign success
                         if (homeState is CampaignSuccess) {
                           final allCampaigns = homeState.response.data.items;
 
-                          // Only show campaigns that are NOT subscribed.
+                          // Only show campaigns that are NOT subscribed
                           final campaigns =
                               allCampaigns.where((campaign) {
                                 final isSubscribed =
@@ -247,7 +221,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 return !isSubscribed;
                               }).toList();
 
-                          // No campaigns available to subscribe.
+                          // No campaigns available
                           if (campaigns.isEmpty) {
                             return const SizedBox.shrink();
                           }
@@ -267,8 +241,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   icon: Icons.card_giftcard,
                                   isLoading: loadingCampaignId == campaign.id,
 
-                                  // Since we already filtered subscribed campaigns,
-                                  // every displayed card gets Subscribe Now.
+                                  // Already filtered subscribed campaigns
                                   showSubscribeButton: true,
 
                                   onSubscribeTap: () {
@@ -312,6 +285,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 SizedBox(height: 24.h),
 
+                // SCAN HISTORY HEADER
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16.w),
                   child: Row(
@@ -324,14 +298,12 @@ class _HomeScreenState extends State<HomeScreen> {
                           color: AppColors.textPrimary,
                         ),
                       ),
-
                       const Spacer(),
-
                       TextButton(
                         onPressed: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(
-                              builder: (_) => const ScanHistoryScreen(),
+                              builder: (_) => ScanHistoryScreen(),
                             ),
                           );
                         },
@@ -350,6 +322,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 SizedBox(height: 12.h),
 
+                // SCAN HISTORY
                 BlocBuilder<ScanHistoryBloc, ScanHistoryState>(
                   builder: (context, state) {
                     if (state is ScanHistoryLoading) {
@@ -388,7 +361,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         );
                       }
 
-                      // Home screen should show only latest 5 scans.
+                      // Show latest 5 scans
                       final scans = state.scans.take(5).toList();
 
                       return ListView.builder(
@@ -408,6 +381,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 SizedBox(height: 24.h),
 
+                // WALLET HEADER
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16.w),
                   child: Row(
@@ -420,14 +394,12 @@ class _HomeScreenState extends State<HomeScreen> {
                           color: AppColors.textPrimary,
                         ),
                       ),
-
                       const Spacer(),
-
                       TextButton(
                         onPressed: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(
-                              builder: (_) => const WalletScreen(),
+                              builder: (_) => WalletScreen(),
                             ),
                           );
                         },
@@ -446,6 +418,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 SizedBox(height: 12.h),
 
+                // WALLET TRANSACTIONS
                 BlocBuilder<WalletBloc, WalletState>(
                   builder: (context, state) {
                     if (state is WalletLoading) {
@@ -489,7 +462,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         );
                       }
 
-                      // Home screen shows only latest 5 transactions.
+                      // Show latest 5 transactions
                       final transactions = state.transactions.take(5).toList();
 
                       return ListView.builder(
@@ -516,30 +489,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget buildCard({required String description}) {
-    return Card(
-      margin: EdgeInsets.only(bottom: 12.h),
-      child: Padding(
-        padding: EdgeInsets.all(20.w),
-        child: Row(
-          children: [
-            Icon(Icons.medical_services, size: 35.sp),
-
-            SizedBox(width: 16.w),
-
-            Expanded(
-              child: Text(
-                description,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontSize: 14.sp),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  // CAMPAIGN SHIMMER
 
   Widget _buildBannerShimmer() {
     return SizedBox(
@@ -564,7 +514,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 padding: EdgeInsets.all(18.w),
                 child: Row(
                   children: [
-                    // Left content
                     Expanded(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -617,7 +566,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     SizedBox(width: 12.w),
 
-                    // Icon placeholder
                     Container(
                       width: 72.w,
                       height: 72.w,
@@ -635,6 +583,8 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+
+  // WALLET SHIMMER
 
   Widget _buildWalletTransactionShimmer() {
     return Shimmer.fromColors(
@@ -730,6 +680,8 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+
+  // SCAN HISTORY SHIMMER
 
   Widget _buildScanHistoryShimmer() {
     return Shimmer.fromColors(

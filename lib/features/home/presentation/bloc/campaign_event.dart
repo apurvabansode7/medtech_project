@@ -1,6 +1,6 @@
-abstract class HomeEvent {}
+abstract class CampaignEvent {}
 
-class CampaignRequested extends HomeEvent {
+class CampaignRequested extends CampaignEvent {
   final int page;
   final int pageSize;
 

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:medtech_project/components/cached_network_image.dart';
 import 'package:medtech_project/constant/app_colors.dart';
-import 'package:medtech_project/core/utils/device_info_service.dart';
+import 'package:medtech_project/utils/device_info_service.dart';
 
 class CustomDrawer extends StatelessWidget {
   const CustomDrawer({
@@ -147,11 +147,11 @@ class CustomDrawer extends StatelessWidget {
           _DrawerItem(icon: Icons.gif_box, title: 'Rewards Products', onTap: onRewardTap),
           _DrawerItem(
             icon: Icons.subscriptions_outlined,
-            title: 'subscribe campaign',
+            title: 'Subscribed Campaign',
             onTap: onsubscribeTap,
           ),
           _DrawerItem(icon: Icons.wallet_giftcard, title: 'Claim Reward', onTap: onClaimRewardTap),
-          _DrawerItem(icon: Icons.logout, title: 'log out', onTap: onLogoutTap),
+          _DrawerItem(icon: Icons.logout, title: 'Log Out', onTap: onLogoutTap),
 
           const Spacer(),
 

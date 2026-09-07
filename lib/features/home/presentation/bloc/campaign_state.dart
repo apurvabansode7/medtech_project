@@ -1,12 +1,12 @@
 import 'package:medtech_project/features/home/data/models/campaign_response.dart';
 
-abstract class HomeState {}
+abstract class CampaignState {}
 
-class HomeInitial extends HomeState {}
+class CampaignInitial extends CampaignState {}
 
-class CampaignLoading extends HomeState {}
+class CampaignLoading extends CampaignState {}
 
-class CampaignSuccess extends HomeState {
+class CampaignSuccess extends CampaignState {
   final CampaignResponse  response;
 
   CampaignSuccess({
@@ -14,7 +14,7 @@ class CampaignSuccess extends HomeState {
   });
 }
 
-class CampaignFailure extends HomeState {
+class CampaignFailure extends CampaignState {
   final String message;
 
   CampaignFailure({

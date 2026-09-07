@@ -2,28 +2,45 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:medtech_project/constant/app_colors.dart';
+import 'package:medtech_project/features/interested_product/domain/repositories/interested_product_repository.dart';
 import 'package:medtech_project/features/interested_product/presentation/bloc/interested_product_bloc.dart';
 import 'package:medtech_project/features/interested_product/presentation/bloc/interested_product_event.dart';
 import 'package:medtech_project/features/interested_product/presentation/bloc/interested_product_state.dart';
 import 'package:medtech_project/features/interested_product/presentation/widgets/interested_product_card.dart';
 import 'package:medtech_project/features/interested_product/presentation/widgets/intereted_product_shimmer.dart';
 
-class InterestedScreen extends StatefulWidget {
+class InterestedScreen extends StatelessWidget {
   const InterestedScreen({super.key});
 
   @override
-  State<InterestedScreen> createState() => _InterestedScreenState();
+  Widget build(BuildContext context) {
+    return BlocProvider<InterestedProductBloc>(
+      create: (context) => InterestedProductBloc(
+        repository: context.read<InterestedProductRepository>(),
+      ),
+      child: const _InterestedView(),
+    );
+  }
 }
 
-class _InterestedScreenState extends State<InterestedScreen> {
+class _InterestedView extends StatefulWidget {
+  const _InterestedView();
+
+  @override
+  State<_InterestedView> createState() => _InterestedViewState();
+}
+
+class _InterestedViewState extends State<_InterestedView> {
   final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
 
-    // Load first page
-    context.read<InterestedProductBloc>().add(LoadInterestedProducts());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.read<InterestedProductBloc>().add(LoadInterestedProducts());
+    });
 
     _scrollController.addListener(_onScroll);
   }

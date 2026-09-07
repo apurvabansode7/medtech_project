@@ -45,7 +45,6 @@ class AuthApi {
     required String appVersion,
     required String platform,
   }) async {
-    print('VERIFY OTP REQUEST: email=$email, otp=$otp, deviceId=$deviceId, appVersion=$appVersion ,  platform=$platform');
     return await apiService.post(
       '/api/v1/otp/verify',
       data: {

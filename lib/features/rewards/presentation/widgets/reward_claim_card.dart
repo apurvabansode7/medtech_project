@@ -31,8 +31,7 @@ class RewardClaimCard extends StatelessWidget {
     final brand = claim.rewardSnapshot?.brand ?? '';
     final images = claim.rewardSnapshot?.images ?? [];
   final claimStatus = claim.status.trim().toLowerCase();
-final isRejected = claimStatus == 'rejected';
-final isCancelled = claimStatus == 'cancelled';
+
 
 final statusColor = _getStatusColor(claimStatus);
 
@@ -138,28 +137,28 @@ Row(
     ),
 
     // Don't show delivery status for rejected/cancelled claims.
-    if (!isRejected && !isCancelled) ...[
-      SizedBox(width: 8.w),
+    // if (!isRejected && !isCancelled) ...[
+    //   SizedBox(width: 8.w),
 
-      Container(
-        padding: EdgeInsets.symmetric(
-          horizontal: 8.w,
-          vertical: 4.h,
-        ),
-        decoration: BoxDecoration(
-          color: Colors.grey.shade100,
-          borderRadius: BorderRadius.circular(6.r),
-        ),
-        child: Text(
-          'Delivery: ${claim.deliveryStatus.isNotEmpty ? claim.deliveryStatus.toUpperCase() : 'PENDING'}',
-          style: TextStyle(
-            fontSize: 10.sp,
-            fontWeight: FontWeight.w500,
-            color: AppColors.textSecondary,
-          ),
-        ),
-      ),
-    ],
+    //   Container(
+    //     padding: EdgeInsets.symmetric(
+    //       horizontal: 8.w,
+    //       vertical: 4.h,
+    //     ),
+    //     decoration: BoxDecoration(
+    //       color: Colors.grey.shade100,
+    //       borderRadius: BorderRadius.circular(6.r),
+    //     ),
+    //     child: Text(
+    //       'Delivery: ${claim.deliveryStatus.isNotEmpty ? claim.deliveryStatus.toUpperCase() : 'PENDING'}',
+    //       style: TextStyle(
+    //         fontSize: 10.sp,
+    //         fontWeight: FontWeight.w500,
+    //         color: AppColors.textSecondary,
+    //       ),
+    //     ),
+    //   ),
+    // ],
   ],
 ),
                   ],

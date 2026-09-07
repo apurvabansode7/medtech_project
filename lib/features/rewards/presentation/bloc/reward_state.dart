@@ -43,9 +43,7 @@ class RewardClaimsSuccess extends RewardState {
 class RewardClaimsFailure extends RewardState {
   final String message;
 
-  const RewardClaimsFailure({
-    required this.message,
-  });
+  const RewardClaimsFailure({required this.message});
 }
 
 class ClaimRewardLoading extends RewardState {
@@ -55,15 +53,11 @@ class ClaimRewardLoading extends RewardState {
 class ClaimRewardSuccess extends RewardState {
   final String message;
 
-  const ClaimRewardSuccess({
-    required this.message,
-  });
+  const ClaimRewardSuccess({required this.message});
 }
 
 class ClaimRewardFailure extends RewardState {
   final String message;
 
-  const ClaimRewardFailure({
-    required this.message,
-  });
+  const ClaimRewardFailure({required this.message});
 }

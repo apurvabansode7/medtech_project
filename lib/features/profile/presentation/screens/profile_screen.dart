@@ -368,9 +368,7 @@ class ProfileScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // =====================================================
           // PROFILE IMAGE / INITIAL
-          // =====================================================
 
           Container(
             width: 58.w,
@@ -417,9 +415,7 @@ class ProfileScreen extends StatelessWidget {
 
           SizedBox(width: 14.w),
 
-          // =====================================================
           // PROFILE DETAILS
-          // =====================================================
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -470,13 +466,22 @@ class ProfileScreen extends StatelessWidget {
             ),
             child: IconButton(
               onPressed: () async {
+                // final result = await Navigator.push(
+                //   context,
+                //   MaterialPageRoute(
+                //     builder: (_) => EditProfileScreen(profile: profile),
+                //   ),
+                // );
                 final result = await Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => EditProfileScreen(profile: profile),
+                    builder:
+                        (_) => BlocProvider.value(
+                          value: context.read<ProfileBloc>(),
+                          child: EditProfileScreen(profile: profile),
+                        ),
                   ),
                 );
-
                 if (result == true && context.mounted) {
                   context.read<ProfileBloc>().add(const LoadProfile());
                 }

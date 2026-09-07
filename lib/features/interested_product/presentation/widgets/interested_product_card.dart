@@ -260,10 +260,7 @@ import 'package:medtech_project/features/interested_product/presentation/widgets
 class InterestedProductCard extends StatelessWidget {
   final InterestedProduct product;
 
-  const InterestedProductCard({
-    super.key,
-    required this.product,
-  });
+  const InterestedProductCard({super.key, required this.product});
 
   @override
   Widget build(BuildContext context) {
@@ -275,10 +272,7 @@ class InterestedProductCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18.r),
-        border: Border.all(
-          color: Colors.grey.shade200,
-          width: 1,
-        ),
+        border: Border.all(color: Colors.grey.shade200, width: 1),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
@@ -290,9 +284,7 @@ class InterestedProductCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ─────────────────────────────────────
           // PRODUCT HEADER
-          // ─────────────────────────────────────
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -343,29 +335,19 @@ class InterestedProductCard extends StatelessWidget {
 
               SizedBox(width: 8.w),
 
-              StatusChip(
-                status: product.status,
-              ),
+              StatusChip(status: product.status),
             ],
           ),
 
           SizedBox(height: 16.h),
 
-          Divider(
-            height: 1,
-            color: Colors.grey.shade200,
-          ),
+          Divider(height: 1, color: Colors.grey.shade200),
 
           SizedBox(height: 14.h),
 
-          // ─────────────────────────────────────
           // QUANTITY
-          // ─────────────────────────────────────
           Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: 12.w,
-              vertical: 10.h,
-            ),
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
             decoration: BoxDecoration(
               color: Colors.grey.shade50,
               borderRadius: BorderRadius.circular(12.r),
@@ -403,9 +385,7 @@ class InterestedProductCard extends StatelessWidget {
             ),
           ),
 
-          // ─────────────────────────────────────
           // NOTE
-          // ─────────────────────────────────────
           if (product.note.trim().isNotEmpty) ...[
             SizedBox(height: 14.h),
 
@@ -416,9 +396,7 @@ class InterestedProductCard extends StatelessWidget {
             ),
           ],
 
-          // ─────────────────────────────────────
           // CLOSE REASON
-          // ─────────────────────────────────────
           if (isClosed &&
               product.closeReason != null &&
               product.closeReason!.trim().isNotEmpty) ...[
@@ -432,9 +410,7 @@ class InterestedProductCard extends StatelessWidget {
             ),
           ],
 
-          // ─────────────────────────────────────
           // DATE
-          // ─────────────────────────────────────
           if (product.createdAt != null) ...[
             SizedBox(height: 14.h),
 
@@ -481,9 +457,7 @@ class InterestedProductCard extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────
 // INFO SECTION
-// ─────────────────────────────────────────────
 
 class _InfoSection extends StatelessWidget {
   final String title;
@@ -508,9 +482,7 @@ class _InfoSection extends StatelessWidget {
             Icon(
               icon,
               size: 15.sp,
-              color: isReason
-                  ? Colors.redAccent
-                  : AppColors.textSecondary,
+              color: isReason ? Colors.redAccent : AppColors.textSecondary,
             ),
 
             SizedBox(width: 6.w),
@@ -530,20 +502,19 @@ class _InfoSection extends StatelessWidget {
 
         Container(
           width: double.infinity,
-          padding: EdgeInsets.symmetric(
-            horizontal: 12.w,
-            vertical: 11.h,
-          ),
+          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 11.h),
           decoration: BoxDecoration(
-            color: isReason
-                ? Colors.redAccent.withValues(alpha: 0.05)
-                : Colors.grey.shade50,
+            color:
+                isReason
+                    ? Colors.redAccent.withValues(alpha: 0.05)
+                    : Colors.grey.shade50,
             borderRadius: BorderRadius.circular(11.r),
-            border: isReason
-                ? Border.all(
-                    color: Colors.redAccent.withValues(alpha: 0.12),
-                  )
-                : null,
+            border:
+                isReason
+                    ? Border.all(
+                      color: Colors.redAccent.withValues(alpha: 0.12),
+                    )
+                    : null,
           ),
           child: Text(
             text,

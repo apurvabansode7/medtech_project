@@ -59,16 +59,11 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<void> logout() async {
     try {
-      final response = await authApi.logout();
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        await AppPreferences.logout();
-        return;
-      }
-
-      throw Exception(response.data?['message'] ?? 'Logout failed');
-    } on DioException catch (e) {
-      throw Exception(e.response?.data?['message'] ?? 'Something went wrong');
+      await authApi.logout();
+    } catch (e) {
+      debugPrint('Logout API error: $e');
+    } finally {
+      await AppPreferences.logout();
     }
   }
 //   @override

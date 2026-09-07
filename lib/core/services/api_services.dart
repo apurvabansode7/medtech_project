@@ -1,10 +1,15 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:medtech_project/constant/api_constants.dart';
+import 'package:medtech_project/core/navigation/app_navigator.dart';
 import 'package:medtech_project/core/network/internet_checker.dart';
+import 'package:medtech_project/features/auth/presentation/screens/login_screen.dart';
 import 'package:medtech_project/utils/app_prefrences.dart';
+import 'package:medtech_project/utils/app_snack_bar.dart';
 
 class ApiService {
   late Dio dio;
+   bool _isHandlingUnauthorized = false;
 
   ApiService() {
     dio = Dio(
@@ -81,7 +86,7 @@ class ApiService {
           print('MESSAGE: ${error.message}');
 
           if (error.response?.statusCode == 401) {
-            await AppPreferences.logout();
+            await _handleUnauthorized();
           }
 
           return handler.next(error);
@@ -105,10 +110,6 @@ class ApiService {
     return await dio.get(endpoint, queryParameters: queryParameters);
   }
 
-  // Future<Response> post(String endpoint, {Map<String, dynamic>? data}) async {
-  //   await _checkInternet();
-  //   return await dio.post(endpoint, data: data);
-  // }
   Future<Response> post(
     String endpoint, {
     Map<String, dynamic>? data,
@@ -127,5 +128,42 @@ class ApiService {
   Future<Response> delete(String endpoint) async {
     await _checkInternet();
     return await dio.delete(endpoint);
+  }
+
+  Future<void> _handleUnauthorized() async {
+    if (_isHandlingUnauthorized) {
+      return;
+    }
+
+    _isHandlingUnauthorized = true;
+
+    try {
+      await AppPreferences.logout();
+
+      final context = navigatorKey.currentContext;
+
+      if (context != null) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(
+            builder: (_) => const LoginScreen(),
+          ),
+          (route) => false,
+        );
+
+        scaffoldMessengerKey.currentState
+          ?..hideCurrentSnackBar()
+          ..showSnackBar(
+            const SnackBar(
+              content: Text('Session expired. Please log in again.'),
+              backgroundColor: Colors.red,
+              duration: Duration(seconds: 4),
+            ),
+          );
+      }
+    } catch (e) {
+      print('Error handling 401 unauthorized: $e');
+    } finally {
+      _isHandlingUnauthorized = false;
+    }
   }
 }

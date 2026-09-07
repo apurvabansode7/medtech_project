@@ -57,7 +57,7 @@ class AvailableRewardShimmer extends StatelessWidget {
                 borderRadius: BorderRadius.circular(4.r),
               ),
             ),
-            SizedBox(height: 6.h),
+            const Spacer(),
             Container(
               width: double.infinity,
               height: 32.h,

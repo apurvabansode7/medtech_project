@@ -4,7 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:medtech_project/constant/app_colors.dart';
 
 import 'package:medtech_project/features/home/data/models/partner_campaign_response.dart';
-import 'package:medtech_project/features/home/presentation/bloc/home_bloc.dart';
+import 'package:medtech_project/features/home/domain/repositories/campaign_repository.dart';
 
 import 'package:medtech_project/features/home/presentation/widgets/campaign_card.dart';
 import 'package:medtech_project/features/subscribe/presentation/bloc/campaign_earnings_bloc.dart.dart';
@@ -149,7 +149,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         surfaceTintColor: AppColors.transparent,
         iconTheme: const IconThemeData(color: AppColors.white),
         title: Text(
-          ' Subscribe Campaign',
+          ' Subscribed Campaign',
           style: TextStyle(
             fontSize: 18.sp,
             fontWeight: FontWeight.w500,
@@ -212,14 +212,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                 return Padding(
                   padding: EdgeInsets.only(bottom: 12.h),
                   child: GestureDetector(
+                   
                     onTap: () {
-                      final repository = context.read<HomeBloc>().repository;
-                      final earningsBloc = CampaignEarningsBloc(
-                        repository: repository,
-                      );
-                      final rewardsBloc = CampaignRewardsBloc(
-                        repository: repository,
-                      );
+                      final repository = context.read<CampaignRepository>();
 
                       Navigator.push(
                         context,
@@ -227,8 +222,18 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                           builder:
                               (_) => MultiBlocProvider(
                                 providers: [
-                                  BlocProvider.value(value: earningsBloc),
-                                  BlocProvider.value(value: rewardsBloc),
+                                  BlocProvider<CampaignEarningsBloc>(
+                                    create:
+                                        (_) => CampaignEarningsBloc(
+                                          repository: repository,
+                                        ),
+                                  ),
+                                  BlocProvider<CampaignRewardsBloc>(
+                                    create:
+                                        (_) => CampaignRewardsBloc(
+                                          repository: repository,
+                                        ),
+                                  ),
                                 ],
                                 child: SubscriptionDetailsScreen(
                                   campaign: campaign,

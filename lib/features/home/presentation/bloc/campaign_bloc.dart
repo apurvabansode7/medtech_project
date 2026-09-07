@@ -1,22 +1,22 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:medtech_project/features/home/domain/repositories/campaign_repository.dart';
 
-import 'home_event.dart';
-import 'home_state.dart';
+import 'campaign_event.dart';
+import 'campaign_state.dart';
 
-class HomeBloc extends Bloc<HomeEvent, HomeState> {
+class CampaignBloc extends Bloc<CampaignEvent, CampaignState> {
   final CampaignRepository repository;
 
-  HomeBloc({
+  CampaignBloc({
     required this.repository,
-  }) : super(HomeInitial()) {
+  }) : super(CampaignInitial()) {
     on<CampaignRequested>(_onCampaignRequested);
    
   }
 
   Future<void> _onCampaignRequested(
     CampaignRequested event,
-    Emitter<HomeState> emit,
+    Emitter<CampaignState> emit,
   ) async {
     emit(CampaignLoading());
 

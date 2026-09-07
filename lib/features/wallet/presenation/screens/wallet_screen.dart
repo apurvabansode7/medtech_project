@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:medtech_project/features/wallet/domain/repositories/wallet_repositories.dart';
 import 'package:medtech_project/features/wallet/presenation/bloc/wallet_bloc.dart';
 import 'package:medtech_project/features/wallet/presenation/bloc/wallet_event.dart';
 import 'package:medtech_project/features/wallet/presenation/bloc/wallet_state.dart';
@@ -9,14 +10,28 @@ import 'package:shimmer/shimmer.dart';
 
 import 'package:medtech_project/constant/app_colors.dart';
 
-class WalletScreen extends StatefulWidget {
+class WalletScreen extends StatelessWidget {
   const WalletScreen({super.key});
 
   @override
-  State<WalletScreen> createState() => _WalletScreenState();
+  Widget build(BuildContext context) {
+    return BlocProvider<WalletBloc>(
+      create: (context) => WalletBloc(
+        repository: context.read<WalletRepository>(),
+      ),
+      child: const _WalletView(),
+    );
+  }
 }
 
-class _WalletScreenState extends State<WalletScreen> {
+class _WalletView extends StatefulWidget {
+  const _WalletView();
+
+  @override
+  State<_WalletView> createState() => _WalletViewState();
+}
+
+class _WalletViewState extends State<_WalletView> {
   late final ScrollController _scrollController;
 
   @override
@@ -27,6 +42,7 @@ class _WalletScreenState extends State<WalletScreen> {
     _scrollController.addListener(_onScroll);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       context.read<WalletBloc>().add(LoadWalletTransactions());
     });
   }
@@ -88,22 +104,16 @@ class _WalletScreenState extends State<WalletScreen> {
             if (state is WalletLoading) {
               return _buildShimmerList();
             }
-        
+
             if (state is WalletFailure) {
               return _buildErrorState(state.message);
             }
-        
+
             if (state is WalletSuccess) {
               if (state.transactions.isEmpty) {
-                return RefreshIndicator(
-                  onRefresh: _onRefresh,
-                  child: ListView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    children: [SizedBox(height: 250.h), _buildEmptyState()],
-                  ),
-                );
+                return _buildEmptyState();
               }
-        
+
               return RefreshIndicator(
                 onRefresh: _onRefresh,
                 color: AppColors.primary,
@@ -129,15 +139,15 @@ class _WalletScreenState extends State<WalletScreen> {
                         ),
                       );
                     }
-        
+
                     final transaction = state.transactions[index];
-        
+
                     return WalletTransactionCard(transaction: transaction);
                   },
                 ),
               );
             }
-        
+
             return const SizedBox.shrink();
           },
         ),
@@ -174,7 +184,9 @@ class _WalletScreenState extends State<WalletScreen> {
                         shape: BoxShape.circle,
                       ),
                     ),
+
                     SizedBox(width: 12.w),
+
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -184,13 +196,17 @@ class _WalletScreenState extends State<WalletScreen> {
                             width: 120.w,
                             color: AppColors.white,
                           ),
+
                           SizedBox(height: 8.h),
+
                           Container(
                             height: 10.h,
                             width: 170.w,
                             color: AppColors.white,
                           ),
+
                           SizedBox(height: 6.h),
+
                           Container(
                             height: 10.h,
                             width: 130.w,
@@ -199,22 +215,42 @@ class _WalletScreenState extends State<WalletScreen> {
                         ],
                       ),
                     ),
+
                     SizedBox(width: 10.w),
-                    Container(height: 16.h, width: 45.w, color: AppColors.white),
+
+                    Container(
+                      height: 16.h,
+                      width: 45.w,
+                      color: AppColors.white,
+                    ),
                   ],
                 ),
+
                 SizedBox(height: 18.h),
+
                 Container(
                   height: 1,
                   width: double.infinity,
                   color: AppColors.white,
                 ),
+
                 SizedBox(height: 12.h),
+
                 Row(
                   children: [
-                    Container(height: 12.h, width: 100.w, color: AppColors.white),
+                    Container(
+                      height: 12.h,
+                      width: 100.w,
+                      color: AppColors.white,
+                    ),
+
                     const Spacer(),
-                    Container(height: 12.h, width: 90.w, color: AppColors.white),
+
+                    Container(
+                      height: 12.h,
+                      width: 90.w,
+                      color: AppColors.white,
+                    ),
                   ],
                 ),
               ],
@@ -224,6 +260,8 @@ class _WalletScreenState extends State<WalletScreen> {
       ),
     );
   }
+
+  // EMPTY STATE
 
   Widget _buildEmptyState() {
     return Center(
@@ -236,7 +274,9 @@ class _WalletScreenState extends State<WalletScreen> {
               size: 60.sp,
               color: Colors.grey.shade400,
             ),
+
             SizedBox(height: 16.h),
+
             Text(
               'No Transactions Yet',
               textAlign: TextAlign.center,
@@ -246,7 +286,9 @@ class _WalletScreenState extends State<WalletScreen> {
                 color: AppColors.textPrimary,
               ),
             ),
+
             SizedBox(height: 8.h),
+
             Text(
               'Your wallet transactions will appear here.',
               textAlign: TextAlign.center,
@@ -258,7 +300,7 @@ class _WalletScreenState extends State<WalletScreen> {
     );
   }
 
-
+  // ERROR STATE
 
   Widget _buildErrorState(String message) {
     return RefreshIndicator(
@@ -268,6 +310,7 @@ class _WalletScreenState extends State<WalletScreen> {
         physics: const AlwaysScrollableScrollPhysics(),
         children: [
           SizedBox(height: 180.h),
+
           Center(
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 30.w),
@@ -278,7 +321,9 @@ class _WalletScreenState extends State<WalletScreen> {
                     size: 55.sp,
                     color: Colors.red.shade300,
                   ),
+
                   SizedBox(height: 14.h),
+
                   Text(
                     'Unable to Load Wallet',
                     textAlign: TextAlign.center,
@@ -288,7 +333,9 @@ class _WalletScreenState extends State<WalletScreen> {
                       color: AppColors.textPrimary,
                     ),
                   ),
+
                   SizedBox(height: 8.h),
+
                   Text(
                     message,
                     textAlign: TextAlign.center,
@@ -297,10 +344,14 @@ class _WalletScreenState extends State<WalletScreen> {
                       color: Colors.grey.shade600,
                     ),
                   ),
+
                   SizedBox(height: 18.h),
+
                   ElevatedButton(
                     onPressed: () {
-                      context.read<WalletBloc>().add(LoadWalletTransactions());
+                      context.read<WalletBloc>().add(
+                        LoadWalletTransactions(page: 1, limit: 5),
+                      );
                     },
                     child: const Text('Retry'),
                   ),

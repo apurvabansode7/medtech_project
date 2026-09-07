@@ -5,7 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:medtech_project/components/app_buttons.dart';
 import 'package:medtech_project/constant/app_colors.dart';
-import 'package:medtech_project/core/utils/device_info_service.dart';
+import 'package:medtech_project/utils/app_snack_bar.dart';
+import 'package:medtech_project/utils/device_info_service.dart';
 import 'package:medtech_project/features/auth/presentation/bloc/verify_otp_bloc/verify_bloc.dart';
 import 'package:medtech_project/features/auth/presentation/bloc/verify_otp_bloc/verify_otp_event.dart';
 import 'package:medtech_project/features/auth/presentation/bloc/verify_otp_bloc/verify_otp_state.dart';
@@ -134,12 +135,7 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
         //   );
         // }
         if (state is VerifyOtpSuccess) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Login successful'),
-              backgroundColor: AppColors.success,
-            ),
-          );
+          AppSnackbar.success('Login successful');
 
           Navigator.pushAndRemoveUntil(
             context,
@@ -148,9 +144,7 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
           );
         }
         if (state is VerifyOtpFailure) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message), backgroundColor: Colors.red),
-          );
+          AppSnackbar.error(state.message);
         }
 
         // RESEND SUCCESS
@@ -158,19 +152,12 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
           otpController.clear();
           _startOtpTimer();
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('OTP resent successfully'),
-              backgroundColor: AppColors.success,
-            ),
-          );
+          AppSnackbar.success("OTP sent successfully");
         }
 
         // RESEND FAILURE
         if (state is ResendOtpFailure) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message), backgroundColor: AppColors.error),
-          );
+          AppSnackbar.error(state.message);
         }
       },
 
@@ -394,19 +381,13 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
                           final otp = otpController.text.trim();
 
                           if (otp.isEmpty) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Please enter OTP')),
-                            );
+                            AppSnackbar.error("Please enter OTP");
                             return;
                           }
 
                           if (otp.length != 6) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                  'Please enter a valid 6-digit OTP',
-                                ),
-                              ),
+                            AppSnackbar.error(
+                              "Please enter a valid 6-digit OTP",
                             );
                             return;
                           }

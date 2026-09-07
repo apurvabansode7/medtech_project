@@ -1,27 +1,55 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:medtech_project/features/product/domain/repositories/showcase_product_repository.dart';
+import 'package:medtech_project/features/product/presentation/bloc/product_interest_bloc.dart';
 import 'package:medtech_project/features/product/presentation/bloc/showcase_product_bloc.dart';
 import 'package:medtech_project/features/product/presentation/bloc/showcase_product_event.dart';
 import 'package:medtech_project/features/product/presentation/bloc/showcase_product_state.dart';
 import 'package:medtech_project/features/product/presentation/widgets/showcase_product_card.dart';
 import 'package:medtech_project/features/product/presentation/widgets/showcase_product_shimmer.dart';
 
-class ProductScreen extends StatefulWidget {
+class ProductScreen extends StatelessWidget {
   const ProductScreen({super.key});
 
   @override
-  State<ProductScreen> createState() => _ProductScreenState();
+  Widget build(BuildContext context) {
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<ShowcaseProductBloc>(
+          create: (context) => ShowcaseProductBloc(
+            repository: context.read<ShowcaseProductRepository>(),
+          ),
+        ),
+        BlocProvider<ProductInterestBloc>(
+          create: (context) => ProductInterestBloc(
+            repository: context.read<ShowcaseProductRepository>(),
+          ),
+        ),
+      ],
+      child: const _ProductView(),
+    );
+  }
 }
 
-class _ProductScreenState extends State<ProductScreen> {
+class _ProductView extends StatefulWidget {
+  const _ProductView();
+
+  @override
+  State<_ProductView> createState() => _ProductViewState();
+}
+
+class _ProductViewState extends State<_ProductView> {
   final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
 
-    context.read<ShowcaseProductBloc>().add(const LoadShowcaseProducts());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.read<ShowcaseProductBloc>().add(const LoadShowcaseProducts());
+    });
 
     _scrollController.addListener(_onScroll);
   }

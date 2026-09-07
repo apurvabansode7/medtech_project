@@ -16,6 +16,7 @@ class ProductScannerScreen extends StatefulWidget {
   State<ProductScannerScreen> createState() => _ProductScannerScreenState();
 }
 
+
 class _ProductScannerScreenState extends State<ProductScannerScreen>
     with SingleTickerProviderStateMixin {
   // Scanner Controller

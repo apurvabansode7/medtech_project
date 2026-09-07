@@ -2,20 +2,35 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:medtech_project/constant/app_colors.dart';
+import 'package:medtech_project/features/scan_history/domain/repositories/scan_history_repository.dart';
 import 'package:medtech_project/features/scan_history/presentation/bloc/scan_history_bloc.dart';
 import 'package:medtech_project/features/scan_history/presentation/bloc/scan_history_event.dart';
 import 'package:medtech_project/features/scan_history/presentation/bloc/scan_history_state.dart';
 import 'package:medtech_project/features/scan_history/presentation/widgtes/scan_history_card.dart';
 import 'package:shimmer/shimmer.dart';
 
-class ScanHistoryScreen extends StatefulWidget {
+class ScanHistoryScreen extends StatelessWidget {
   const ScanHistoryScreen({super.key});
 
   @override
-  State<ScanHistoryScreen> createState() => _ScanHistoryScreenState();
+  Widget build(BuildContext context) {
+    return BlocProvider<ScanHistoryBloc>(
+      create: (context) => ScanHistoryBloc(
+        repository: context.read<ScanHistoryRepository>(),
+      ),
+      child: const _ScanHistoryView(),
+    );
+  }
 }
 
-class _ScanHistoryScreenState extends State<ScanHistoryScreen> {
+class _ScanHistoryView extends StatefulWidget {
+  const _ScanHistoryView();
+
+  @override
+  State<_ScanHistoryView> createState() => _ScanHistoryViewState();
+}
+
+class _ScanHistoryViewState extends State<_ScanHistoryView> {
   late final ScrollController _scrollController;
 
   final int _limit = 10;
@@ -25,13 +40,13 @@ class _ScanHistoryScreenState extends State<ScanHistoryScreen> {
     super.initState();
 
     _scrollController = ScrollController();
-
     _scrollController.addListener(_onScroll);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       context.read<ScanHistoryBloc>().add(
-        LoadScanHistory(page: 1, limit: _limit),
-      );
+            LoadScanHistory(page: 1, limit: _limit),
+          );
     });
   }
 
@@ -100,7 +115,6 @@ class _ScanHistoryScreenState extends State<ScanHistoryScreen> {
           ),
         ),
       ),
-
       body: BlocBuilder<ScanHistoryBloc, ScanHistoryState>(
         builder: (context, state) {
           if (state is ScanHistoryLoading) {
@@ -108,29 +122,24 @@ class _ScanHistoryScreenState extends State<ScanHistoryScreen> {
           }
 
           if (state is ScanHistoryFailure) {
-            return _buildError(state.message);
+            // return _buildErrorState(state.message);
           }
 
           if (state is ScanHistorySuccess) {
             if (state.scans.isEmpty) {
-              return RefreshIndicator(
-                onRefresh: _onRefresh,
-                child: ListView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  children: [SizedBox(height: 180.h), _buildEmptyState()],
-                ),
-              );
+              return _buildEmptyState();
             }
 
             return RefreshIndicator(
               onRefresh: _onRefresh,
+              color: AppColors.primary,
               child: ListView.builder(
                 controller: _scrollController,
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 24.h),
                 itemCount: state.scans.length + (state.isLoadingMore ? 1 : 0),
                 itemBuilder: (context, index) {
-                  if (index == state.scans.length) {
+                  if (index >= state.scans.length) {
                     return _buildLoadMoreIndicator();
                   }
 
@@ -345,63 +354,6 @@ class _ScanHistoryScreenState extends State<ScanHistoryScreen> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildError(String message) {
-    return RefreshIndicator(
-      onRefresh: _onRefresh,
-      child: ListView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        children: [
-          SizedBox(height: 160.h),
-
-          Center(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 30.w),
-              child: Column(
-                children: [
-                  Icon(Icons.error_outline, size: 50.sp, color: Colors.red),
-
-                  SizedBox(height: 14.h),
-
-                  Text(
-                    'Unable to load scan history',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 17.sp,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-
-                  SizedBox(height: 8.h),
-
-                  Text(
-                    message,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 13.sp,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
-
-                  SizedBox(height: 20.h),
-
-                  ElevatedButton(
-                    onPressed: () {
-                      context.read<ScanHistoryBloc>().add(
-                        LoadScanHistory(page: 1, limit: _limit),
-                      );
-                    },
-                    child: const Text('Retry'),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }

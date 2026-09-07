@@ -10,6 +10,7 @@ import 'package:medtech_project/features/subscribe/presentation/bloc/campaign_ea
 import 'package:medtech_project/features/subscribe/presentation/bloc/campaign_rewards_bloc.dart';
 import 'package:medtech_project/features/subscribe/presentation/bloc/campaign_rewards_event.dart';
 import 'package:medtech_project/features/subscribe/presentation/bloc/campaign_rewards_state.dart';
+import 'package:medtech_project/utils/app_snack_bar.dart';
 import 'package:shimmer/shimmer.dart';
 
 class SubscriptionDetailsScreen extends StatefulWidget {
@@ -127,29 +128,17 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
           BlocListener<CampaignEarningsBloc, CampaignEarningsState>(
             listener: (context, state) {
               if (state is CampaignEarningsFailure) {
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(SnackBar(content: Text(state.message)));
+                AppSnackbar.error(state.message);
               }
             },
           ),
           BlocListener<CampaignRewardsBloc, CampaignRewardsState>(
             listener: (context, state) {
               if (state is CampaignRewardsFailure) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(state.message),
-                    backgroundColor: Colors.red,
-                  ),
-                );
+                AppSnackbar.error(state.message);
               }
               if (state is ClaimCampaignRewardSuccess) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(state.message),
-                    backgroundColor: Colors.green,
-                  ),
-                );
+                AppSnackbar.success(state.message);
                 // Refresh rewards & earnings dynamically after claim
                 context.read<CampaignRewardsBloc>().add(
                   CampaignRewardsRequested(
@@ -165,12 +154,7 @@ class _SubscriptionDetailsScreenState extends State<SubscriptionDetailsScreen> {
                 );
               }
               if (state is ClaimCampaignRewardFailure) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(state.message),
-                    backgroundColor: Colors.red,
-                  ),
-                );
+                AppSnackbar.error(state.message);
               }
             },
           ),

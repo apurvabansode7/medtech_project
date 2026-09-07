@@ -1,13 +1,15 @@
 import 'dart:async';
 
+import 'package:device_preview/device_preview.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
-import 'package:medtech_project/constant/app_colors.dart';
+
 
 import 'package:medtech_project/core/app_theme.dart';
+import 'package:medtech_project/core/navigation/app_navigator.dart';
 import 'package:medtech_project/core/network/internet_checker.dart';
 import 'package:medtech_project/core/services/api_services.dart';
 import 'package:medtech_project/core/theme/theme_cubit.dart';
@@ -22,48 +24,52 @@ import 'package:medtech_project/features/auth/presentation/bloc/reset_password_b
 import 'package:medtech_project/features/auth/presentation/bloc/verify_otp_bloc/verify_bloc.dart';
 import 'package:medtech_project/features/home/data/api/campaign_api.dart';
 import 'package:medtech_project/features/home/data/repositories/campaign_repository_impl.dart';
-import 'package:medtech_project/features/home/presentation/bloc/enroll_campaign_bloc.dart';
-import 'package:medtech_project/features/home/presentation/bloc/home_bloc.dart';
-import 'package:medtech_project/features/home/presentation/bloc/home_event.dart';
-import 'package:medtech_project/features/interested_product/data/api/interested_product_api.dart';
-import 'package:medtech_project/features/interested_product/data/repositories/interested_product_repository_impl.dart';
-import 'package:medtech_project/features/interested_product/presentation/bloc/interested_product_bloc.dart';
+import 'package:medtech_project/features/home/domain/repositories/campaign_repository.dart';
+
+
+
 import 'package:medtech_project/features/product/data/api/showcase_product_api.dart';
 import 'package:medtech_project/features/product/data/repositories/showcase_product_repository_impl.dart';
-import 'package:medtech_project/features/product/presentation/bloc/product_interest_bloc.dart';
-import 'package:medtech_project/features/product/presentation/bloc/showcase_product_bloc.dart';
-import 'package:medtech_project/features/rewards/data/api/reward_api.dart';
-import 'package:medtech_project/features/rewards/data/repositories/reward_repository_impl.dart';
-import 'package:medtech_project/features/rewards/presentation/bloc/available_rewards_bloc.dart';
-import 'package:medtech_project/features/rewards/presentation/bloc/reward_bloc.dart';
-import 'package:medtech_project/features/rewards/presentation/bloc/reward_claim_bloc.dart';
+import 'package:medtech_project/features/product/domain/repositories/showcase_product_repository.dart';
 import 'package:medtech_project/features/profile/data/api/profile_api.dart';
 import 'package:medtech_project/features/profile/data/repositories/profile_repository_impl.dart';
-import 'package:medtech_project/features/profile/presentation/bloc/profile.bloc.dart';
-import 'package:medtech_project/features/profile/presentation/bloc/profile_event.dart';
+
+import 'package:medtech_project/features/rewards/data/api/reward_api.dart';
+import 'package:medtech_project/features/rewards/data/repositories/reward_repository_impl.dart';
+
 
 import 'package:medtech_project/features/scan_history/data/api/scan_history_api.dart';
 import 'package:medtech_project/features/scan_history/data/repositories/scan_history_repository_impl.dart';
-import 'package:medtech_project/features/scan_history/presentation/bloc/scan_history_bloc.dart';
-import 'package:medtech_project/features/scan_history/presentation/bloc/scan_history_event.dart';
+import 'package:medtech_project/features/scan_history/domain/repositories/scan_history_repository.dart';
 import 'package:medtech_project/features/scanner/data/api/product_scan_api.dart';
-import 'package:medtech_project/features/subscribe/presentation/bloc/campaign_subscribed_bloc.dart';
 import 'package:medtech_project/features/scanner/data/repositories/product_scan_repository_impl.dart';
-import 'package:medtech_project/features/scanner/presentation/bloc/product_scan_bloc.dart';
+import 'package:medtech_project/features/scanner/domain/repositories/product_scan_repository.dart';
+
 import 'package:medtech_project/features/wallet/data/api/wallet_api.dart';
 import 'package:medtech_project/features/wallet/data/repositories/wallet_repositories_impl.dart';
-import 'package:medtech_project/features/wallet/presenation/bloc/wallet_bloc.dart';
-import 'package:medtech_project/features/wallet/presenation/bloc/wallet_event.dart';
+import 'package:medtech_project/features/wallet/domain/repositories/wallet_repositories.dart';
+
 import 'package:medtech_project/utils/app_snack_bar.dart';
 
 import 'features/splash/screens/splash_screen.dart';
+
+import 'package:medtech_project/features/auth/domain/repositories/auth_repository.dart';
+import 'package:medtech_project/features/interested_product/data/api/interested_product_api.dart';
+import 'package:medtech_project/features/interested_product/data/repositories/interested_product_repository_impl.dart';
+import 'package:medtech_project/features/interested_product/domain/repositories/interested_product_repository.dart';
+import 'package:medtech_project/features/profile/domain/repositories/profile_repository.dart';
+import 'package:medtech_project/features/rewards/domain/repositories/reward_repository.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await dotenv.load(fileName: '.env');
 
-  runApp(const MedTechApp());
+  runApp(
+    //DevicePreview(enabled: true, builder: (context) =>
+     const MedTechApp()
+     //),
+  );
 }
 
 class InternetStatusListener extends StatefulWidget {
@@ -88,28 +94,12 @@ class _InternetStatusListenerState extends State<InternetStatusListener> {
       if (!mounted) return;
 
       if (status == InternetStatus.disconnected) {
-        scaffoldMessengerKey.currentState
-          ?..hideCurrentSnackBar()
-          ..showSnackBar(
-            const SnackBar(
-              content: Text('No Internet Connection'),
-              backgroundColor: AppColors.error,
-              duration: Duration(seconds: 3),
-            ),
-          );
+        AppSnackbar.error("No internet connection");
       }
 
       if (status == InternetStatus.connected &&
           _previousStatus == InternetStatus.disconnected) {
-        scaffoldMessengerKey.currentState
-          ?..hideCurrentSnackBar()
-          ..showSnackBar(
-            const SnackBar(
-              content: Text('Internet Reconnected'),
-              backgroundColor: AppColors.success,
-              duration: Duration(seconds: 3),
-            ),
-          );
+        AppSnackbar.success("Internet Reconnected");
       }
 
       _previousStatus = status;
@@ -134,35 +124,42 @@ class MedTechApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // CREATE SHARED API DEPENDENCIES ONCE
-
     final apiService = ApiService();
 
     final authApi = AuthApi(apiService: apiService);
-
     final authRepository = AuthRepositoryImpl(authApi: authApi);
+
     final campaignApi = CampaignApi(apiService: apiService);
-
     final campaignRepository = CampaignRepositoryImpl(api: campaignApi);
-    final productScanApi = ProductScanApi(apiService: apiService);
 
+    final walletApi = WalletApi(apiService: apiService);
+    final walletRepository = WalletRepositoryImpl(walletApi: walletApi);
+
+    final scanHistoryApi = ScanHistoryApi(apiService: apiService);
+    final scanHistoryRepository = ScanHistoryRepositoryImpl(
+      scanHistoryApi: scanHistoryApi,
+    );
+
+    final profileApi = ProfileApi(apiService: apiService);
+    final profileRepository = ProfileRepositoryImpl(api: profileApi);
+
+    final showcaseProductApi = ShowcaseProductApi(apiService: apiService);
+    final showcaseProductRepository = ShowcaseProductRepositoryImpl(
+      api: showcaseProductApi,
+    );
+
+    final productScanApi = ProductScanApi(apiService: apiService);
     final productScanRepository = ProductScanRepositoryImpl(
       productScanApi: productScanApi,
     );
 
-    final walletApi = WalletApi(apiService: apiService);
-
-    final walletRepository = WalletRepositoryImpl(walletApi: walletApi);
-    final scanHistoryApi = ScanHistoryApi(apiService: apiService);
-
-    final scanHistoryRepository = ScanHistoryRepositoryImpl(
-      scanHistoryApi: scanHistoryApi,
-    );
-    final profileApi = ProfileApi(apiService: apiService);
-
-    final profileRepository = ProfileRepositoryImpl(api: profileApi);
-
     final rewardApi = RewardApi(apiService: apiService);
     final rewardRepository = RewardRepositoryImpl(rewardApi: rewardApi);
+
+    final interestedProductApi = InterestedProductApi(apiService: apiService);
+    final interestedProductRepository = InterestedProductRepositoryImpl(
+      api: interestedProductApi,
+    );
 
     return ScreenUtilInit(
       designSize: const Size(360, 690),
@@ -171,125 +168,78 @@ class MedTechApp extends StatelessWidget {
       ensureScreenSize: true,
 
       builder: (context, child) {
-        return MultiBlocProvider(
+        return MultiRepositoryProvider(
           providers: [
-            BlocProvider<AuthBloc>(
-              create: (_) => AuthBloc(authRepository: authRepository),
-            ),
-            BlocProvider<HomeBloc>(
-              create:
-                  (_) =>
-                      HomeBloc(repository: campaignRepository)
-                        ..add(CampaignRequested(page: 1, pageSize: 10)),
-            ),
-            BlocProvider<CampaignSubscribedBloc>(
-              create: (_) => CampaignSubscribedBloc(repository: campaignRepository),
-            ),
-            BlocProvider<CampaignEnrollBloc>(
-              create: (_) => CampaignEnrollBloc(repository: campaignRepository),
-            ),
-            BlocProvider<ForgotPasswordBloc>(
-              create: (_) => ForgotPasswordBloc(authRepository: authRepository),
-            ),
-
-            BlocProvider<VerifyOtpBloc>(
-              create: (_) => VerifyOtpBloc(authRepository: authRepository),
-            ),
-
-            BlocProvider<RewardBloc>(
-              create: (_) => RewardBloc(repository: rewardRepository),
-            ),
-            BlocProvider<AvailableRewardsBloc>(
-              create: (_) => AvailableRewardsBloc(repository: rewardRepository),
-            ),
-            BlocProvider<RewardClaimBloc>(
-              create: (_) => RewardClaimBloc(repository: rewardRepository),
-            ),
-            BlocProvider<ResetBloc>(
-              create: (_) => ResetBloc(authRepository: authRepository),
-            ),
-            BlocProvider<ProductScanBloc>(
-              create: (_) => ProductScanBloc(repository: productScanRepository),
-            ),
-
-            BlocProvider<WalletBloc>(
-              create:
-                  (_) =>
-                      WalletBloc(repository: walletRepository)
-                        ..add(LoadWalletTransactions(page: 1, limit: 20)),
-            ),
-            BlocProvider<ScanHistoryBloc>(
-              create:
-                  (_) =>
-                      ScanHistoryBloc(repository: scanHistoryRepository)
-                        ..add(LoadScanHistory(page: 1, limit: 10)),
-            ),
-            BlocProvider<ShowcaseProductBloc>(
-              create:
-                  (_) => ShowcaseProductBloc(
-                    repository: ShowcaseProductRepositoryImpl(
-                      api: ShowcaseProductApi(apiService: apiService),
-                    ),
-                  ),
-            ),
-
-            BlocProvider<ProductInterestBloc>(
-              create:
-                  (_) => ProductInterestBloc(
-                    repository: ShowcaseProductRepositoryImpl(
-                      api: ShowcaseProductApi(apiService: apiService),
-                    ),
-                  ),
-            ),
-            BlocProvider<InterestedProductBloc>(
-              create:
-                  (context) => InterestedProductBloc(
-                    repository: InterestedProductRepositoryImpl(
-                      api: InterestedProductApi(apiService: apiService),
-                    ),
-                  ),
-            ),
-            BlocProvider<ProfileBloc>(
-              create:
-                  (_) =>
-                      ProfileBloc(repository: profileRepository)
-                        ..add(const LoadProfile()),
-            ),
-
-            BlocProvider<ThemeCubit>(create: (_) => ThemeCubit()),
+            RepositoryProvider<AuthRepository>.value(value: authRepository),
+            RepositoryProvider<ProfileRepository>.value(value: profileRepository),
+            RepositoryProvider<CampaignRepository>.value(value: campaignRepository),
+            RepositoryProvider<WalletRepository>.value(value: walletRepository),
+            RepositoryProvider<ScanHistoryRepository>.value(value: scanHistoryRepository),
+            RepositoryProvider<ShowcaseProductRepository>.value(value: showcaseProductRepository),
+            RepositoryProvider<ProductScanRepository>.value(value: productScanRepository),
+            RepositoryProvider<RewardRepository>.value(value: rewardRepository),
+            RepositoryProvider<InterestedProductRepository>.value(value: interestedProductRepository),
           ],
+          child: MultiBlocProvider(
+            providers: [
+              BlocProvider<AuthBloc>(
+                create:
+                    (_) => AuthBloc(authRepository: authRepository),
+              ),
 
-          child: BlocBuilder<ThemeCubit, ThemeMode>(
-            builder: (context, themeMode) {
-              return MaterialApp(
-                debugShowCheckedModeBanner: false,
-                title: 'MedTech',
+              BlocProvider<ForgotPasswordBloc>(
+                create:
+                    (_) => ForgotPasswordBloc(
+                      authRepository: authRepository,
+                    ),
+              ),
 
-                theme: AppTheme.lightTheme,
-                darkTheme: AppTheme.darkTheme,
-                themeMode: themeMode,
+              BlocProvider<VerifyOtpBloc>(
+                create:
+                    (_) =>
+                        VerifyOtpBloc(authRepository: authRepository),
+              ),
 
-                scaffoldMessengerKey: scaffoldMessengerKey,
+              BlocProvider<ResetBloc>(
+                create:
+                    (_) => ResetBloc(authRepository: authRepository),
+              ),
 
-                builder: (context, widget) {
-                  final mediaQuery = MediaQuery.of(context);
+              BlocProvider<ThemeCubit>(create: (_) => ThemeCubit()),
+            ],
 
-                  return MediaQuery(
-                    data: mediaQuery.copyWith(
-                      textScaler: mediaQuery.textScaler.clamp(
-                        minScaleFactor: 0.8,
-                        maxScaleFactor: 1.2,
+            child: BlocBuilder<ThemeCubit, ThemeMode>(
+              builder: (context, themeMode) {
+                return MaterialApp(
+                  debugShowCheckedModeBanner: false,
+                  title: 'MedTech',
+
+                  theme: AppTheme.lightTheme,
+                  darkTheme: AppTheme.darkTheme,
+                  themeMode: themeMode,
+
+                  scaffoldMessengerKey: scaffoldMessengerKey,
+
+                  builder: (context, widget) {
+                    final mediaQuery = MediaQuery.of(context);
+
+                    return MediaQuery(
+                      data: mediaQuery.copyWith(
+                        textScaler: mediaQuery.textScaler.clamp(
+                          minScaleFactor: 0.8,
+                          maxScaleFactor: 1.2,
+                        ),
                       ),
-                    ),
-                    child: InternetStatusListener(
-                      child: widget ?? const SizedBox(),
-                    ),
-                  );
-                },
-
-                home: const SplashScreen(),
-              );
-            },
+                      child: InternetStatusListener(
+                        child: widget ?? const SizedBox(),
+                      ),
+                    );
+                  },
+                  navigatorKey: navigatorKey,
+                  home: const SplashScreen(),
+                );
+              },
+            ),
           ),
         );
       },
