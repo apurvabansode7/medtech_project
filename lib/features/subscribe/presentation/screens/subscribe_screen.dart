@@ -8,6 +8,9 @@ import 'package:medtech_project/features/home/domain/repositories/campaign_repos
 import 'package:medtech_project/features/home/presentation/widgets/animated_points_summary.dart';
 
 import 'package:medtech_project/features/home/presentation/widgets/campaign_card.dart';
+import 'package:medtech_project/features/profile/presentation/bloc/profile.bloc.dart';
+import 'package:medtech_project/features/profile/presentation/bloc/profile_event.dart';
+import 'package:medtech_project/features/profile/presentation/bloc/profile_state.dart';
 import 'package:medtech_project/features/subscribe/presentation/bloc/campaign_earnings_bloc.dart.dart';
 import 'package:medtech_project/features/subscribe/presentation/bloc/campaign_rewards_bloc.dart';
 import 'package:medtech_project/features/subscribe/presentation/bloc/campaign_subscribed_bloc.dart';
@@ -343,8 +346,10 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       onRefresh: _onRefresh,
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
+        padding: EdgeInsets.all(16.w),
         children: [
-          SizedBox(height: MediaQuery.of(context).size.height * 0.3),
+          _buildPointsSummary(),
+          SizedBox(height: MediaQuery.of(context).size.height * 0.15),
           Center(
             child: Padding(
               padding: EdgeInsets.all(24.w),
@@ -414,96 +419,105 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       child: const Center(child: CircularProgressIndicator()),
     );
   }
-Widget _buildShimmer() {
-  return Skeletonizer(
-    enabled: true,
-    child: ListView.builder(
-      physics: const AlwaysScrollableScrollPhysics(),
-      padding: EdgeInsets.all(16.w),
-      itemCount: 5,
-      itemBuilder: (context, index) {
-        return Container(
-          height: 150.h,
-          margin: EdgeInsets.only(bottom: 12.h),
-          padding: EdgeInsets.all(16.w),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(18.r),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Bone.circle(size: 44.w),
-                  SizedBox(width: 12.w),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Bone(
-                          width: 150.w,
-                          height: 15.h,
-                          borderRadius: BorderRadius.circular(4.r),
-                        ),
-                        SizedBox(height: 8.h),
-                        Bone(
-                          width: 110.w,
-                          height: 11.h,
-                          borderRadius: BorderRadius.circular(4.r),
-                        ),
-                      ],
+
+  Widget _buildShimmer() {
+    return Skeletonizer(
+      enabled: true,
+      child: ListView.builder(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: EdgeInsets.all(16.w),
+        itemCount: 5,
+        itemBuilder: (context, index) {
+          return Container(
+            height: 150.h,
+            margin: EdgeInsets.only(bottom: 12.h),
+            padding: EdgeInsets.all(16.w),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(18.r),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Bone.circle(size: 44.w),
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Bone(
+                            width: 150.w,
+                            height: 15.h,
+                            borderRadius: BorderRadius.circular(4.r),
+                          ),
+                          SizedBox(height: 8.h),
+                          Bone(
+                            width: 110.w,
+                            height: 11.h,
+                            borderRadius: BorderRadius.circular(4.r),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  Bone(
-                    width: 60.w,
-                    height: 24.h,
-                    borderRadius: BorderRadius.circular(12.r),
-                  ),
-                ],
-              ),
-              const Spacer(),
-              Bone(
-                width: double.infinity,
-                height: 12.h,
-                borderRadius: BorderRadius.circular(4.r),
-              ),
-              SizedBox(height: 8.h),
-              Bone(
-                width: 190.w,
-                height: 11.h,
-                borderRadius: BorderRadius.circular(4.r),
-              ),
-            ],
-          ),
-        );
-      },
-    ),
-  );
-}
+                    Bone(
+                      width: 60.w,
+                      height: 24.h,
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                  ],
+                ),
+                const Spacer(),
+                Bone(
+                  width: double.infinity,
+                  height: 12.h,
+                  borderRadius: BorderRadius.circular(4.r),
+                ),
+                SizedBox(height: 8.h),
+                Bone(
+                  width: 190.w,
+                  height: 11.h,
+                  borderRadius: BorderRadius.circular(4.r),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
 
   Widget _buildPointsSummary() {
-    if (_subscribedCampaigns.isEmpty) {
-      return const SizedBox.shrink();
-    }
+    return BlocBuilder<ProfileBloc, ProfileState>(
+      builder: (context, profileState) {
+        int totalEarned = 0;
+        int totalAvailable = 0;
+        int pendingPoints = 0;
 
-    final totalEarned = _subscribedCampaigns.fold<int>(
-      0,
-      (sum, campaign) => sum + campaign.pointsEarned,
-    );
+        if (profileState is ProfileLoaded) {
+          totalEarned = profileState.profile.totalPointsEarned.toInt();
+          totalAvailable = profileState.profile.availableBalance.toInt();
+          pendingPoints = (totalEarned - totalAvailable).clamp(0, 9999999);
+        } else if (_subscribedCampaigns.isNotEmpty) {
+          totalEarned = _subscribedCampaigns.fold<int>(
+            0,
+            (sum, campaign) => sum + campaign.pointsEarned,
+          );
+          totalAvailable = _subscribedCampaigns.fold<int>(
+            0,
+            (sum, campaign) => sum + campaign.pointsAvailable,
+          );
+          pendingPoints = (totalEarned - totalAvailable).clamp(0, 9999999);
+        }
 
-    final totalAvailable = _subscribedCampaigns.fold<int>(
-      0,
-      (sum, campaign) => sum + campaign.pointsAvailable,
-    );
-
-    final pendingPoints = totalEarned - totalAvailable;
-
-    return AnimatedPointsSummary(
-      totalEarned: totalEarned,
-      requiredPoints: totalAvailable,
-      pendingPoints: pendingPoints,
-       showSchemaPoints: false,
+        return AnimatedPointsSummary(
+          totalEarned: totalEarned,
+          requiredPoints: totalAvailable,
+          pendingPoints: pendingPoints,
+          showSchemaPoints: false,
+        );
+      },
     );
   }
 }

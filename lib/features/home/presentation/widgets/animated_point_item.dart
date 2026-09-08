@@ -17,6 +17,7 @@ class AnimatedPointItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TweenAnimationBuilder<double>(
+      key: ValueKey(value),
       tween: Tween(begin: 0, end: value.toDouble()),
       duration: const Duration(milliseconds: 1000),
       curve: Curves.easeOut,

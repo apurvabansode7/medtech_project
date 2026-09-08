@@ -11,7 +11,6 @@ import 'package:medtech_project/features/subscribe/presentation/bloc/campaign_re
 import 'package:medtech_project/features/subscribe/presentation/bloc/campaign_rewards_event.dart';
 import 'package:medtech_project/features/subscribe/presentation/bloc/campaign_rewards_state.dart';
 import 'package:medtech_project/utils/app_snack_bar.dart';
-import 'package:shimmer/shimmer.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class SubscriptionDetailsScreen extends StatefulWidget {

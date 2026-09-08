@@ -18,6 +18,7 @@ import 'package:medtech_project/features/home/presentation/widgets/points_summar
 
 // Profile
 import 'package:medtech_project/features/profile/presentation/bloc/profile.bloc.dart';
+import 'package:medtech_project/features/profile/presentation/bloc/profile_event.dart';
 import 'package:medtech_project/features/profile/presentation/bloc/profile_state.dart';
 
 // Scan History
@@ -100,6 +101,7 @@ class _HomeScreenViewState extends State<_HomeScreenView> {
     final scanHistoryBloc = context.read<ScanHistoryBloc>();
     final walletBloc = context.read<WalletBloc>();
     final homeBloc = context.read<CampaignBloc>();
+    final profileBloc = context.read<ProfileBloc>();
 
     // Reload scan history
     scanHistoryBloc.add(LoadScanHistory(page: 1, limit: 5));
@@ -109,6 +111,9 @@ class _HomeScreenViewState extends State<_HomeScreenView> {
 
     // Reload campaigns
     homeBloc.add(CampaignRequested(page: 1, pageSize: 10));
+
+    // Reload profile points
+    profileBloc.add(const LoadProfile());
 
     try {
       await Future.wait([
@@ -120,6 +125,9 @@ class _HomeScreenViewState extends State<_HomeScreenView> {
         ),
         homeBloc.stream.firstWhere(
           (state) => state is CampaignSuccess || state is CampaignFailure,
+        ),
+        profileBloc.stream.firstWhere(
+          (state) => state is ProfileLoaded || state is ProfileFailure,
         ),
       ]);
     } catch (e) {
@@ -162,13 +170,28 @@ class _HomeScreenViewState extends State<_HomeScreenView> {
                 SizedBox(height: 10.h),
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16.w),
-                  child: const PointsSummaryCard(
-                    totalEarnedPoints: 1250,
-                    earnedPoints: 1000,
-                    pendingPoints: 250,
-                    schemaTotalPoints: 500,
-                    schemaEarnedPoints: 400,
-                    schemaPendingPoints: 100,
+                  child: BlocBuilder<ProfileBloc, ProfileState>(
+                    builder: (context, profileState) {
+                      int totalEarned = 0;
+                      int available = 0;
+                      int pending = 0;
+
+                      if (profileState is ProfileLoaded) {
+                        totalEarned = profileState.profile.totalPointsEarned.toInt();
+                        available = profileState.profile.availableBalance.toInt();
+                        pending = (totalEarned - available).clamp(0, 9999999);
+                      }
+
+                      return AnimatedPointsSummary(
+                        totalEarned: totalEarned,
+                        requiredPoints: available,
+                        pendingPoints: pending,
+                        showSchemaPoints: true,
+                        schemaTotalPoints: 500,
+                        schemaEarnedPoints: 400,
+                        schemaPendingPoints: 100,
+                      );
+                    },
                   ),
                 ),
                 // CAMPAIGNS

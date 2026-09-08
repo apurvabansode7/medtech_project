@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:medtech_project/constant/api_constants.dart';
 import 'package:medtech_project/core/navigation/app_navigator.dart';
 import 'package:medtech_project/core/network/internet_checker.dart';
-import 'package:medtech_project/features/auth/presentation/screens/login_screen.dart';
 import 'package:medtech_project/utils/app_prefrences.dart';
 import 'package:medtech_project/utils/app_snack_bar.dart';
 
@@ -143,12 +142,7 @@ class ApiService {
       final context = navigatorKey.currentContext;
 
       if (context != null) {
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(
-            builder: (_) => const LoginScreen(),
-          ),
-          (route) => false,
-        );
+      
 
         scaffoldMessengerKey.currentState
           ?..hideCurrentSnackBar()

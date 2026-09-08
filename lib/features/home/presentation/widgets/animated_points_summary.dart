@@ -10,12 +10,18 @@ class AnimatedPointsSummary extends StatelessWidget {
     required this.requiredPoints,
     required this.pendingPoints,
     required this.showSchemaPoints,
+    this.schemaTotalPoints = 500,
+    this.schemaEarnedPoints = 400,
+    this.schemaPendingPoints = 100,
   });
 
   final int totalEarned;
   final int requiredPoints;
   final int pendingPoints;
   final bool showSchemaPoints;
+  final int schemaTotalPoints;
+  final int schemaEarnedPoints;
+  final int schemaPendingPoints;
 
   @override
   Widget build(BuildContext context) {
@@ -79,16 +85,52 @@ class AnimatedPointsSummary extends StatelessWidget {
                           value: requiredPoints,
                         ),
                       ),
-                       if (showSchemaPoints)
+                    ],
+                  ),
+
+                  if (showSchemaPoints) ...[
+                    SizedBox(height: 16.h),
+                    Divider(color: Colors.grey.shade200, height: 1),
+                    SizedBox(height: 16.h),
+
+                    Text(
+                      'Schema Points',
+                      style: TextStyle(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    SizedBox(height: 16.h),
+
+                    Row(
+                      children: [
                         Expanded(
                           child: AnimatedPointItem(
                             icon: Icons.card_giftcard_rounded,
-                            title: 'Schema',
-                            value: 100,
+                            title: 'Schema Total',
+                            value: schemaTotalPoints,
                           ),
                         ),
-                    ],
-                  ),
+
+                        Expanded(
+                          child: AnimatedPointItem(
+                            icon: Icons.hourglass_empty_rounded,
+                            title: 'Schema Pending',
+                            value: schemaPendingPoints,
+                          ),
+                        ),
+
+                        Expanded(
+                          child: AnimatedPointItem(
+                            icon: Icons.emoji_events_rounded,
+                            title: 'Schema Earned',
+                            value: schemaEarnedPoints,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ],
               ),
             ),

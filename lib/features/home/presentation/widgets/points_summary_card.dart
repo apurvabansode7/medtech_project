@@ -187,10 +187,11 @@ class _AnimatedPointRow extends StatelessWidget {
           SizedBox(width: 12.w),
 
           SizedBox(
-            width: 50.w,
+            width: 70.w,
             child: Align(
               alignment: Alignment.centerRight,
               child: TweenAnimationBuilder<int>(
+                key: ValueKey(value),
                 tween: IntTween(
                   begin: 0,
                   end: value,

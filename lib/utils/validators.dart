@@ -1,7 +1,7 @@
 class Validators {
   static String? email(String? value) {
     if (value == null || value.trim().isEmpty) {
-      return 'Please enter your Phone                                   ';
+      return 'Please enter your email';
     }
 
     final emailRegex = RegExp(
